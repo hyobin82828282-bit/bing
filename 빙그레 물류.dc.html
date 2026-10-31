@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="pages/office-decrypt.js"></script>
+<style>
+  body{margin:0;background:#FFF8F0;font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;color:#0F172A}
+  a{color:#D63370;text-decoration:none}
+  a:hover{color:#A8215A;text-decoration:underline}
+  input,select,button,textarea{font-family:inherit}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+</style>
+</helmet>
+
+<div style="display:flex;align-items:stretch;min-height:100vh">
+
+  <aside style="width:224px;flex:0 0 224px;background:#FFFDF8;border-right:1px solid #F3E3D6;display:flex;flex-direction:column;padding:22px 0;position:sticky;top:0;height:100vh;box-sizing:border-box;align-self:flex-start">
+    <div style="display:flex;align-items:center;gap:11px;padding:0 20px 20px;border-bottom:1px solid #F6E6DA">
+      <div style="width:38px;height:38px;flex:none;border-radius:12px;background:#FFE3EC;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1">🍦</div>
+      <div style="min-width:0">
+        <div style="font-size:15px;font-weight:700;letter-spacing:-0.3px">물류 관리</div>
+        <div style="margin-top:2px;font-size:12px;color:#6B7280">빙그레 · 오산센터</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;padding:14px 12px">
+      <div style="padding:6px 8px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기준정보</div>
+      <div onClick="{{ goItems }}" style="{{ navItems }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍦</span>품목현황</div>
+      <div onClick="{{ goWb }}" style="{{ navWb }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍧</span>통합내역</div>
+      <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">클레임</div>
+      <div onClick="{{ goClaims }}" style="{{ navClaims }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍨</span>클레임 관리
+        <sc-if value="{{ hasOpenClaims }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700">{{ openClaimCount }}</span></sc-if>
+      </div>
+      <div onClick="{{ goPhoto }}" style="{{ navPhoto }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍡</span>반품사진</div>
+      <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기록</div>
+      <div onClick="{{ goLog }}" style="{{ navLog }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🥛</span>변경 이력</div>
+    </div>
+    <div style="margin-top:auto;padding:0 20px 12px;display:flex;justify-content:space-between;font-size:20px"><span>🍦</span><span>🍨</span><span>🍧</span><span>🍡</span><span>🍫</span></div>
+    <div style="padding:14px 20px 0;border-top:1px solid #F6E6DA">
+      <button onClick="{{ openSync }}" style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 0;border:none;background:none;font-size:12.5px;color:#374151;cursor:pointer;text-align:left" style-hover="color:#D63370">{{ syncLabel }}</button>
+      <div style="padding-bottom:4px;font-size:11px;color:#6B7280;line-height:1.5">{{ syncHint }}</div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <sc-if value="{{ isItems }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">기준정보</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍦</span>품목현황</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <label style="height:36px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #D63370;border-radius:8px;background:#fff;font-size:12.5px;font-weight:700;color:#D63370;cursor:pointer" style-hover="background:#FFEEF4">엑셀 업로드<input type="file" accept=".xlsx,.xls" onChange="{{ onItemFile }}" style="display:none"></input></label>
+          <button onClick="{{ openItemPaste }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">붙여넣기</button>
+          <button onClick="{{ exportItems }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">엑셀 내보내기</button>
+          <button onClick="{{ newItem }}" style="height:36px;padding:0 16px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">+ 품목 추가</button>
+        </div>
+      </header>
+      <div style="padding:20px 32px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="text" placeholder="상품코드 · 업체코드 · 상품명 · 바코드" value="{{ itemQ }}" onChange="{{ onItemQ }}" style="width:280px;max-width:100%;height:36px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+          <select value="{{ itemTemp }}" onChange="{{ onItemTemp }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none">
+            <option value="">전체 보관온도</option>
+            <option value="냉동">냉동</option>
+            <option value="냉장">냉장</option>
+            <option value="상온">상온</option>
+          </select>
+          <select value="{{ itemUse }}" onChange="{{ onItemUse }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none">
+            <option value="">사용여부 전체</option>
+            <option value="사용">사용</option>
+            <option value="미사용">미사용</option>
+          </select>
+          <span style="margin-left:auto;font-size:12.5px;color:#6B7280">{{ itemCount }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap">
+              <thead>
+                <tr style="background:#FFF4EA;color:#7A4A2E;text-align:left">
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">상품코드</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">업체 품목코드</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">상품명</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">바코드</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">보관온도</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">단위</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">상품구분</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">사용</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">등록일</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">최근 수정</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ itemRows }}" as="x" hint-placeholder-count="8">
+                  <tr onClick="{{ x.onClick }}" style="cursor:pointer" style-hover="background:#FFF7F1">
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;font-size:11.5px;color:#6B7280">{{ x.code }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6">{{ x.sku }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:240px;font-weight:600">{{ x.name }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ x.barcode }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;text-align:center"><span style="{{ x.tempStyle }}">{{ x.temp }}</span></td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;text-align:center;color:#4B5563">{{ x.unit }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ x.type }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;text-align:center;color:#4B5563">{{ x.use }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#6B7280">{{ x.reg }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#6B7280;font-size:11.5px">{{ x.byLabel }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ itemOverflow }}"><div style="padding:14px 20px;text-align:center;font-size:12.5px;color:#6B7280;border-top:1px solid #F3F4F6">{{ itemOverflowLabel }}</div></sc-if>
+          <sc-if value="{{ noItems }}"><div style="padding:46px 20px;text-align:center;font-size:13px;color:#6B7280">🍦 품목이 없습니다. 엑셀 업로드나 붙여넣기로 넣어주세요.</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isClaims }}" hint-placeholder-val="{{ true }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">클레임</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍨</span>클레임 관리</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button onClick="{{ openClaimPaste }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">송장 붙여넣기</button>
+          <button onClick="{{ exportClaims }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">엑셀 내보내기</button>
+          <button onClick="{{ newClaim }}" style="height:36px;padding:0 16px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">+ 클레임 등록</button>
+        </div>
+      </header>
+      <div style="padding:20px 32px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="month" value="{{ month }}" onChange="{{ onMonth }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box"></input>
+          <input type="text" placeholder="송장 · 수취인 · 상품 · 쇼핑몰 · 비고" value="{{ claimQ }}" onChange="{{ onClaimQ }}" style="width:260px;max-width:100%;height:36px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+          <select value="{{ claimKind }}" onChange="{{ onClaimKind }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none">
+            <option value="">전체 구분</option>
+            <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="0"><option value="{{ k }}">{{ k }}</option></sc-for>
+          </select>
+          <select value="{{ claimReason }}" onChange="{{ onClaimReason }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none">
+            <option value="">전체 사유</option>
+            <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="0"><option value="{{ r }}">{{ r }}</option></sc-for>
+          </select>
+          <div style="display:flex;gap:4px;padding:3px;border:1px solid #E5E7EB;border-radius:9px;background:#fff">
+            <sc-for list="{{ statusTabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <span style="margin-left:auto;font-size:12.5px;color:#6B7280">{{ claimCount }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap">
+              <thead>
+                <tr style="background:#FFF4EA;color:#7A4A2E;text-align:left">
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">접수일</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">출고일</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">운송장번호</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">쇼핑몰</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">수취인</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">구분</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">사유</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">품목코드</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">상품명</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">수량</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">실결제금액</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">재출고송장</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">택배비</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">비고</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">상태</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">최근 수정</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ claimRows }}" as="c" hint-placeholder-count="6">
+                  <tr onClick="{{ c.onClick }}" style="cursor:pointer" style-hover="background:#FFF7F1">
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.recv }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ c.ship }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;font-weight:600">{{ c.wb }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.mall }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.name }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.kind }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:140px">{{ c.reason }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;font-size:11.5px;color:#6B7280">{{ c.code }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:200px">{{ c.product }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;text-align:right">{{ c.qty }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;text-align:right">{{ c.amountLabel }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.rewb }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;text-align:right">{{ c.feeLabel }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:140px;color:#4B5563">{{ c.memo }}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #F3F4F6;text-align:center">
+                      <select value="{{ c.status }}" onClick="{{ c.stop }}" onChange="{{ c.onStatus }}" style="{{ c.stStyle }}">
+                        <sc-for list="{{ statuses }}" as="o" hint-placeholder-count="0"><option value="{{ o }}">{{ o }}</option></sc-for>
+                      </select>
+                    </td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;color:#6B7280;font-size:11.5px">{{ c.byLabel }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ noClaims }}"><div style="padding:46px 20px;text-align:center;font-size:13px;color:#6B7280">{{ noClaimsLabel }}</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWb }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">기준정보</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍧</span>통합내역</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="password" placeholder="엑셀 비밀번호 (있으면)" value="{{ wbPw }}" onChange="{{ onWbPw }}" style="width:180px;height:36px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+          <label style="height:36px;display:inline-flex;align-items:center;padding:0 16px;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">{{ wbBtnLabel }}<input type="file" accept=".xlsx,.xls" onChange="{{ onWbFile }}" style="display:none"></input></label>
+        </div>
+      </header>
+      <div style="padding:20px 32px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="padding:14px 16px;border-radius:10px;background:#fff;border:1px solid #E5E7EB;font-size:12.5px;color:#4B5563;line-height:1.7">
+          통합내역 엑셀을 올리면 송장번호별로 쇼핑몰 · 수취인 · 출고일 · 품목 · 수량 · 실결제금액이 저장되고, 클레임 등록 때 송장번호만 넣으면 자동으로 채워집니다. 이미 등록된 클레임 중 빈 칸이 있는 건도 함께 채워집니다.
+          <div style="margin-top:4px;color:#6B7280">인식 열 (통합관리 양식): 송장번호 · 판매 채널명 · 수취인 명 · 출고완료일 · 상품코드 · 상품명 · 주문수량 · 판매단가</div>
+        </div>
+        <sc-if value="{{ hasWbMonths }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #EEF0F3">
+              <div style="font-size:13px;font-weight:700">보관 관리</div>
+              <div style="font-size:12.5px;color:#4B5563">{{ wbStoreLabel }}</div>
+            </div>
+            <div style="padding:10px 16px;font-size:12px;color:#6B7280;line-height:1.6;border-bottom:1px solid #F3F4F6">{{ wbKeepLabel }}</div>
+            <sc-for list="{{ wbMonths }}" as="m" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:14px;padding:9px 16px;border-bottom:1px solid #F3F4F6;font-size:12.5px;font-variant-numeric:tabular-nums">
+                <span style="width:80px;font-weight:600">{{ m.month }}</span>
+                <span style="width:80px;text-align:right">{{ m.countLabel }}</span>
+                <span style="width:80px;text-align:right;color:#6B7280">{{ m.sizeLabel }}</span>
+                <span style="flex:1;min-width:0;color:#166534;font-size:12px">{{ m.linkLabel }}</span>
+                <sc-if value="{{ m.old }}"><span style="padding:2px 8px;border-radius:5px;background:#FEF3C7;color:#92400E;font-size:11.5px;font-weight:600">보관 기간 지남</span></sc-if>
+                <sc-if value="{{ m.canDel }}"><button onClick="{{ m.onDel }}" style="height:28px;padding:0 12px;border:1px solid #EFC5C0;border-radius:7px;background:#fff;font-size:12px;font-weight:600;color:#8C1D18;cursor:pointer" style-hover="background:#FBEAE9">이 달 삭제</button></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="text" placeholder="송장번호 · 수취인 · 품목" value="{{ wbQ }}" onChange="{{ onWbQ }}" style="width:260px;max-width:100%;height:36px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+          <span style="margin-left:auto;font-size:12.5px;color:#6B7280">{{ wbCount }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap">
+              <thead>
+                <tr style="background:#FFF4EA;color:#7A4A2E;text-align:left">
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">송장번호</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">출고일</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">쇼핑몰</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">수취인</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">품목</th>
+                  <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">실결제금액</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ wbRows }}" as="w" hint-placeholder-count="5">
+                  <tr style-hover="background:#FFF7F1">
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;font-weight:600">{{ w.id }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ w.ship }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6">{{ w.mall }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6">{{ w.name }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:260px">{{ w.itemsLabel }}</td>
+                    <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;text-align:right">{{ w.amountLabel }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ wbOverflow }}"><div style="padding:14px 20px;text-align:center;font-size:12.5px;color:#6B7280;border-top:1px solid #F3F4F6">{{ wbOverflowLabel }}</div></sc-if>
+          <sc-if value="{{ noWb }}"><div style="padding:46px 20px;text-align:center;font-size:13px;color:#6B7280">🍧 아직 올린 통합내역이 없습니다</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ keepPhoto }}" hint-placeholder-val="{{ false }}">
+      <div style="display:{{ dispPhoto }};flex:1;flex-direction:column;min-height:0">
+        <iframe src="빙그레 반품사진.dc.html" style="flex:1;width:100%;min-height:100vh;border:0;background:#FFF8F0"></iframe>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">기록</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🥛</span>변경 이력</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:12.5px;color:#6B7280">최근 500건</span>
+          <sc-if value="{{ logNotAdmin }}"><span style="font-size:12px;color:#6B7280">전체 삭제는 관리자만 가능</span></sc-if>
+          <sc-if value="{{ logCanClear }}"><button onClick="{{ clearLog }}" style="height:36px;padding:0 14px;border:1px solid #EFC5C0;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#8C1D18;cursor:pointer" style-hover="background:#FBEAE9">전체 삭제</button></sc-if>
+        </div>
+      </header>
+      <div style="padding:20px 32px 40px">
+        <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead>
+              <tr style="background:#FFF4EA;color:#7A4A2E;text-align:left">
+                <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;width:120px">시간</th>
+                <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;width:110px">이름</th>
+                <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB;width:130px">작업</th>
+                <th style="padding:11px 14px;font-weight:600;border-bottom:1px solid #E5E7EB">대상</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ logRows }}" as="l" hint-placeholder-count="5">
+                <tr>
+                  <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#6B7280;white-space:nowrap">{{ l.when }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;font-weight:600">{{ l.byLabel }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6">{{ l.action }}</td>
+                  <td style="padding:10px 14px;border-bottom:1px solid #F3F4F6;color:#374151">{{ l.target }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ noLog }}"><div style="padding:46px 20px;text-align:center;font-size:13px;color:#6B7280">🥛 아직 기록이 없습니다</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+</div>
+
+<sc-if value="{{ hasItemEdit }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEdit }}" style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ stop }}" style="width:620px;max-width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+        <div style="font-size:15px;font-weight:700">{{ itemEditTitle }}</div>
+        <button onClick="{{ closeEdit }}" style="width:28px;height:28px;border:1px solid #E5E7EB;border-radius:7px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:18px 22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품코드 *<input value="{{ idr.code }}" onChange="{{ idf.code }}" readOnly="{{ itemLocked }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">업체 품목코드<input value="{{ idr.sku }}" onChange="{{ idf.sku }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품명 *<input value="{{ idr.name }}" onChange="{{ idf.name }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">바코드<input value="{{ idr.barcode }}" onChange="{{ idf.barcode }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">보관온도<select value="{{ idr.temp }}" onChange="{{ idf.temp }}" style="height:36px;padding:0 9px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"><option value="">-</option><option value="냉동">냉동</option><option value="냉장">냉장</option><option value="상온">상온</option></select></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품단위<input value="{{ idr.unit }}" onChange="{{ idf.unit }}" placeholder="EA" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품구분<input value="{{ idr.type }}" onChange="{{ idf.type }}" placeholder="단일상품" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">사용 여부<select value="{{ idr.use }}" onChange="{{ idf.use }}" style="height:36px;padding:0 9px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"><option value="사용">사용</option><option value="미사용">미사용</option></select></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품정가<input type="number" value="{{ idr.price }}" onChange="{{ idf.price }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">비고<input value="{{ idr.memo }}" onChange="{{ idf.memo }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <sc-if value="{{ hasEditErr }}"><div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;background:#FBEAE9;color:#8C1D18;font-size:12.5px">{{ editErr }}</div></sc-if>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid #E5E7EB;background:#F9FAFB">
+        <div><sc-if value="{{ itemLocked }}"><button onClick="{{ delItem }}" style="height:36px;padding:0 14px;border:1px solid #EFC5C0;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#8C1D18;cursor:pointer">삭제</button></sc-if></div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ closeEdit }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">취소</button>
+          <button onClick="{{ saveItem }}" style="height:36px;padding:0 18px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasClaimEdit }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEdit }}" style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ stop }}" style="width:680px;max-width:100%;max-height:90vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+        <div style="font-size:15px;font-weight:700">{{ claimEditTitle }}</div>
+        <button onClick="{{ closeEdit }}" style="width:28px;height:28px;border:1px solid #E5E7EB;border-radius:7px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:18px 22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+        <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:5px">
+          <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">운송장번호 *<input value="{{ cdr.wb }}" onChange="{{ onClaimWb }}" placeholder="송장번호를 넣으면 통합내역에서 자동으로 채워요" style="height:38px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13.5px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+          <sc-if value="{{ wbFound }}"><div style="font-size:12px;color:#166534">✓ 통합내역 등록됨 · {{ wbFoundLabel }}</div></sc-if>
+          <sc-if value="{{ wbMissing }}"><div style="font-size:12px;color:#92400E">통합내역에 없는 송장입니다. 직접 입력하세요.</div></sc-if>
+        </div>
+        <sc-if value="{{ hasWbOpts }}">
+          <div style="grid-column:1/-1;min-width:0;border:1px solid #BFD3FE;border-radius:10px;background:#F5F8FF;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid #DCE6FD">
+              <div style="font-size:12px;font-weight:700;color:#1D4ED8">이 송장 품목 {{ wbOptCount }}개 · {{ wbSelLabel }}</div>
+              <div style="display:flex;gap:6px">
+                <button onClick="{{ wbSelAll }}" style="height:26px;padding:0 10px;border:1px solid #BFD3FE;border-radius:6px;background:#fff;font-size:11.5px;font-weight:600;color:#1D4ED8;cursor:pointer">전체 선택</button>
+                <button onClick="{{ wbSelNone }}" style="height:26px;padding:0 10px;border:1px solid #D1D5DB;border-radius:6px;background:#fff;font-size:11.5px;font-weight:600;color:#4B5563;cursor:pointer">선택 해제</button>
+              </div>
+            </div>
+            <sc-for list="{{ wbOpts }}" as="o" hint-placeholder-count="0">
+              <div onClick="{{ o.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #EEF2FB;cursor:pointer;font-size:12.5px;color:#0F172A" style-hover="background:#FFEEF4">
+                <input type="checkbox" checked="{{ o.checked }}" readOnly="{{ true }}" style="width:15px;height:15px;margin:0;flex:none;accent-color:#D63370;pointer-events:none"></input>
+                <span style="flex:1;min-width:0">{{ o.product }}</span>
+                <span style="flex:none;color:#6B7280;font-size:11.5px">{{ o.code }}</span>
+                <span style="flex:none;width:44px;text-align:right">{{ o.qtyLabel }}</span>
+                <span style="flex:none;width:80px;text-align:right;font-variant-numeric:tabular-nums">{{ o.amountLabel }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:8px 12px;font-size:11.5px;color:#4B5563">{{ wbSelHint }}</div>
+          </div>
+        </sc-if>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">접수일<input type="date" value="{{ cdr.recv }}" onChange="{{ cdf.recv }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">출고일<input type="date" value="{{ cdr.ship }}" onChange="{{ cdf.ship }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">쇼핑몰<input value="{{ cdr.mall }}" onChange="{{ cdf.mall }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">수취인<input value="{{ cdr.name }}" onChange="{{ cdf.name }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">구분<select value="{{ cdr.kind }}" onChange="{{ cdf.kind }}" style="height:36px;padding:0 9px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"><sc-for list="{{ kinds }}" as="k" hint-placeholder-count="0"><option value="{{ k }}">{{ k }}</option></sc-for></select></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">처리상태<select value="{{ cdr.status }}" onChange="{{ cdf.status }}" style="height:36px;padding:0 9px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"><sc-for list="{{ statuses }}" as="o" hint-placeholder-count="0"><option value="{{ o }}">{{ o }}</option></sc-for></select></label>
+        <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">사유<select value="{{ cdr.reason }}" onChange="{{ cdf.reason }}" style="height:36px;padding:0 9px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"><option value="">-</option><sc-for list="{{ reasons }}" as="r" hint-placeholder-count="0"><option value="{{ r }}">{{ r }}</option></sc-for></select></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">품목코드<input value="{{ cdr.code }}" onChange="{{ cdf.code }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">상품명<input list="bg-item-names" value="{{ cdr.product }}" onChange="{{ onClaimProduct }}" placeholder="품목현황에서 검색" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <datalist id="bg-item-names"><sc-for list="{{ itemNames }}" as="n" hint-placeholder-count="0"><option value="{{ n }}"></option></sc-for></datalist>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">수량<input type="number" value="{{ cdr.qty }}" onChange="{{ cdf.qty }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">실결제금액<input type="number" value="{{ cdr.amount }}" onChange="{{ cdf.amount }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">재출고송장<input value="{{ cdr.rewb }}" onChange="{{ cdf.rewb }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">택배비<input type="number" value="{{ cdr.fee }}" onChange="{{ cdf.fee }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">비고<textarea value="{{ cdr.memo }}" onChange="{{ cdf.memo }}" style="min-height:60px;padding:9px 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%;resize:vertical" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></textarea></label>
+        <sc-if value="{{ hasEditErr }}"><div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;background:#FBEAE9;color:#8C1D18;font-size:12.5px">{{ editErr }}</div></sc-if>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid #E5E7EB;background:#F9FAFB">
+        <div><sc-if value="{{ claimLocked }}"><button onClick="{{ delClaim }}" style="height:36px;padding:0 14px;border:1px solid #EFC5C0;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#8C1D18;cursor:pointer">삭제</button></sc-if></div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ closeEdit }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">취소</button>
+          <button onClick="{{ saveClaim }}" style="height:36px;padding:0 18px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasPaste }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closePaste }}" style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ stop }}" style="width:620px;max-width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+        <div style="font-size:15px;font-weight:700">{{ pasteTitle }}</div>
+        <button onClick="{{ closePaste }}" style="width:28px;height:28px;border:1px solid #E5E7EB;border-radius:7px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:12.5px;color:#4B5563;line-height:1.6">{{ pasteGuide }}</div>
+        <textarea value="{{ pasteText }}" onChange="{{ onPasteText }}" placeholder="엑셀에서 복사해 붙여넣으세요" style="min-height:200px;padding:10px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:12.5px;line-height:1.5;resize:vertical;outline:none;font-family:ui-monospace,Menlo,monospace" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></textarea>
+        <div style="font-size:12.5px;font-weight:600;color:#1D4ED8">{{ pastePreview }}</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid #E5E7EB;background:#F9FAFB">
+        <button onClick="{{ closePaste }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">취소</button>
+        <button onClick="{{ runPaste }}" style="height:36px;padding:0 18px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">반영</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasSync }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:560px;max-width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+        <div style="font-size:15px;font-weight:700">실시간 공유 설정</div>
+        <button onClick="{{ syncClose }}" style="width:28px;height:28px;border:1px solid #E5E7EB;border-radius:7px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px">
+        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#6B7280">데이터베이스 주소<input value="{{ syncUrlDraft }}" onChange="{{ onSyncUrl }}" placeholder="https://프로젝트-default-rtdb.asia-southeast1.firebasedatabase.app" style="height:38px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;background:#F9FAFB;font-size:13px;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#6B7280">내 이름 (변경 이력에 표시)<input value="{{ syncNameDraft }}" onChange="{{ onSyncName }}" placeholder="예: 김효빈" style="height:38px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;background:#F9FAFB;font-size:13px;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <div style="font-size:12px;color:#6B7280;line-height:1.6">처음 연결하면 이 컴퓨터의 품목 · 클레임 · 통합내역이 공용 데이터에 합쳐집니다. 이후로는 누가 저장하든 몇 초 안에 모두에게 반영됩니다.</div>
+        <sc-if value="{{ hasSyncErr }}"><div style="padding:10px 12px;border-radius:8px;background:#FBEAE9;color:#8C1D18;font-size:12.5px">{{ syncErr }}</div></sc-if>
+        <sc-if value="{{ isSyncOn }}">
+          <div style="display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid #E5E7EB;border-radius:10px;background:#F9FAFB">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <div style="font-size:13px;font-weight:700">관리자</div>
+              <div style="font-size:12.5px;color:#374151">{{ adminLabel }}</div>
+            </div>
+            <div style="font-size:12px;color:#6B7280;line-height:1.6">{{ adminGuide }}</div>
+            <sc-if value="{{ showLogin }}">
+              <div style="display:flex;gap:8px">
+                <input type="password" inputmode="numeric" value="{{ pinDraft }}" onChange="{{ onPin }}" placeholder="{{ pinPh }}" style="flex:1;min-width:0;height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:13px;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+                <button onClick="{{ pinAction }}" style="height:36px;padding:0 14px;border:1px solid #D63370;border-radius:8px;background:#fff;font-size:12.5px;font-weight:700;color:#D63370;cursor:pointer;white-space:nowrap" style-hover="background:#FFEEF4">{{ pinBtnLabel }}</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showChange }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;gap:8px">
+                  <input type="password" inputmode="numeric" value="{{ pinCur }}" onChange="{{ onPinCur }}" placeholder="현재 비밀번호" style="flex:1;min-width:0;height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:13px;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+                  <input type="password" inputmode="numeric" value="{{ pinDraft }}" onChange="{{ onPin }}" placeholder="새 비밀번호 (4~8자리)" style="flex:1;min-width:0;height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:13px;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px">
+                  <button onClick="{{ adminLogout }}" style="height:34px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">관리자 로그아웃</button>
+                  <button onClick="{{ pinChange }}" style="height:34px;padding:0 14px;border:1px solid #D63370;border-radius:8px;background:#fff;font-size:12.5px;font-weight:700;color:#D63370;cursor:pointer" style-hover="background:#FFEEF4">비밀번호 변경</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasPinMsg }}"><div style="font-size:12px;color:#8C1D18">{{ pinMsg }}</div></sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid #E5E7EB;background:#F9FAFB">
+        <div><sc-if value="{{ isSyncOn }}"><button onClick="{{ syncDisconnect }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#8C1D18;cursor:pointer">공유 끊기</button></sc-if></div>
+        <button onClick="{{ syncConnect }}" style="height:36px;padding:0 18px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">{{ syncBtnLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;max-width:80vw;padding:12px 18px;border-radius:10px;background:#0F172A;color:#fff;font-size:13px;box-shadow:0 12px 32px rgba(15,23,42,0.25)">{{ msg }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;클레임 관리&quot;,&quot;품목현황&quot;],&quot;default&quot;:&quot;클레임 관리&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rowLimit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:300,&quot;min&quot;:50,&quot;max&quot;:2000,&quot;step&quot;:50,&quot;tsType&quot;:&quot;number&quot;},&quot;keepMonths&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:1,&quot;max&quot;:24,&quot;step&quot;:1,&quot;unit&quot;:&quot;개월&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
+const K = { items: "bg_items_v1", claims: "bg_claims_v1", wb: "bg_wb_v1", log: "bg_log_v1" };
+const KINDS = ["택배사고", "아워사고"];
+const REASONS = ["파손반송", "파손수령", "배송지연", "송장흐름없음", "분실", "누락", "오배송", "오출고", "기타"];
+const STATUS = ["접수", "처리중", "완료"];
+const ST_STYLE = { 접수: "background:#FEF3C7;color:#92400E;border-color:#F0D9AE", 처리중: "background:#FFEEF4;color:#1D4ED8;border-color:#BFD3FE", 완료: "background:#E7F5EC;color:#166534;border-color:#BFE3CB" };
+const TEMP_STYLE = { 냉동: "background:#FFEEF4;color:#1D4ED8", 냉장: "background:#E7F5EC;color:#166534", 상온: "background:#FDF0DD;color:#7A4A06" };
+const NAV = "display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13.5px;cursor:pointer;";
+const NAV_ON = NAV + "background:#FFE3EC;color:#A8215A;font-weight:700";
+const NAV_OFF = NAV + "color:#374151";
+const pad = n => String(n).padStart(2, "0");
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const normWb = v => String(v == null ? "" : v).replace(/[\s\-]/g, "").replace(/\.0+$/, "");
+const splitWbs = raw => String(raw == null ? "" : raw).split(/[,，]/).map(normWb).filter(Boolean);
+const num = v => { const n = parseFloat(String(v == null ? "" : v).replace(/,/g, "")); return isNaN(n) ? "" : n; };
+const has = v => v !== "" && v != null;
+const monthsAgo = n => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - n); return d.getFullYear() + "-" + pad(d.getMonth() + 1); };
+const fmt = n => (n === "" || n == null) ? "" : Number(n).toLocaleString("ko-KR");
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const str = v => v == null ? "" : String(v).trim();
+const normH = h => str(h).replace(/\s+/g, "");
+const when = at => { if (!at) return ""; const d = new Date(at); return (d.getMonth() + 1) + "/" + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v == null ? d : v; } catch (e) { return d; } };
+function parseDate(raw) {
+  if (raw === "" || raw == null) return "";
+  if (typeof raw === "number") return new Date(Math.round((raw - 25569) * 864e5)).toISOString().slice(0, 10);
+  const s = String(raw).trim();
+  let m = s.match(/(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/);
+  if (m) return m[1] + "-" + pad(m[2]) + "-" + pad(m[3]);
+  m = s.match(/^(\d{4})(\d{2})(\d{2})/);
+  return m ? m[1] + "-" + m[2] + "-" + m[3] : s;
+}
+const ITEM_H = { "상품코드": "code", "품목코드": "code", "업체품목코드": "sku", "상품명": "name", "품목명": "name", "바코드": "barcode", "보관온도": "temp", "품온": "temp", "사용여부": "use", "상품단위": "unit", "단위": "unit", "상품구분": "type", "제품중량": "weight", "상품정가": "price", "등록일시": "reg", "비고": "memo" };
+const WB_H = { "송장번호": "wb", "운송장번호": "wb", "쇼핑몰명": "mall", "쇼핑몰": "mall", "채널명": "channel", "수취인명": "name", "수취인": "name", "출고등록일시": "ship", "출고일시": "ship", "출고일": "ship", "출고등록일": "ship", "품목코드": "code", "품목명": "product", "상품명": "product", "수량": "qty", "실결제금액": "amount",
+  "송장/박스번호": "wb", "판매채널명": "mall", "판매점": "shop", "출고완료일": "shipDone", "출고확정일": "shipDone2", "상품코드": "code", "주문수량": "qty", "판매단가": "unitPrice", "쇼핑몰주문번호": "orderNo" };
+const ITEM_ORDER = ["code", "sku", "name", "barcode", "temp", "unit", "type", "use", "price", "memo"];
+const ITEM_LABEL = { code: "상품코드", sku: "업체 품목코드", name: "상품명", barcode: "바코드", temp: "보관온도", unit: "상품단위", type: "상품구분", use: "사용 여부", weight: "제품중량", price: "상품정가", reg: "등록일", memo: "비고" };
+const CLAIM_F = ["recv", "ship", "wb", "mall", "name", "kind", "reason", "code", "product", "qty", "amount", "rewb", "fee", "memo", "status"];
+const CLAIM_LABEL = { recv: "접수일", ship: "출고일", wb: "운송장번호", mall: "쇼핑몰", name: "수취인", kind: "구분", reason: "사유", code: "품목코드", product: "상품명", qty: "수량", amount: "실결제금액", rewb: "재출고송장", fee: "택배비", memo: "비고", status: "처리상태" };
+
+// 헤더 행이 있으면 헤더로, 없으면 기본 열 순서로 품목 행을 만듦
+function parseItemRows(rows) {
+  rows = rows.filter(r => r && r.some(c => str(c) !== ""));
+  const hi = rows.slice(0, 10).findIndex(r => r.some(h => ITEM_H[normH(h)] === "name"));
+  const map = {};
+  if (hi >= 0) rows[hi].forEach((h, i) => { const k = ITEM_H[normH(h)]; if (!k) return; if (k === "type" || map[k] === undefined) map[k] = i; });
+  else ITEM_ORDER.forEach((k, i) => { map[k] = i; });
+  const out = [];
+  rows.slice(hi + 1).forEach(r => {
+    const g = k => map[k] === undefined ? "" : str(r[map[k]]);
+    const code = g("code") || g("sku");
+    if (!code || !g("name")) return;
+    out.push({ id: code, code, sku: g("sku"), name: g("name"), barcode: g("barcode"), temp: g("temp"), unit: g("unit"), type: g("type"), use: g("use") || "사용", weight: g("weight"), price: g("price"), reg: g("reg").slice(0, 10), memo: g("memo") });
+  });
+  return out;
+}
+function parseClaimPaste(text) {
+  return String(text || "").split(/\r?\n/).map(l => l.split("\t")).map(c => ({ wb: normWb(c[0]), kind: str(c[1]), reason: str(c[2]), memo: str(c[3]) })).filter(x => /^\d{8,}$/.test(x.wb));
+}
+function parseWbRows(rows) {
+  rows = rows.filter(r => r && r.some(c => str(c) !== ""));
+  const hi = rows.slice(0, 10).findIndex(r => r.some(h => WB_H[normH(h)] === "wb"));
+  if (hi < 0) return null;
+  const map = {};
+  rows[hi].forEach((h, i) => { const k = WB_H[normH(h)]; if (k && map[k] === undefined) map[k] = i; });
+  const out = {};
+  rows.slice(hi + 1).forEach(r => {
+    const g = k => map[k] === undefined ? "" : r[map[k]];
+    const list = splitWbs(g("wb")).filter(w => /^\d+$/.test(w));
+    if (!list.length) return;
+    let mall = str(g("mall")) || str(g("shop"));
+    if (normH(g("channel")) === "스마트스토어(도착보장)") mall = "도착보장";
+    const qty = num(g("qty")), up = num(g("unitPrice"));
+    let amount = num(g("amount"));
+    if (amount === "" && up !== "" && up > 0) amount = up * (qty === "" ? 1 : qty);
+    const ship = parseDate(g("shipDone")) || parseDate(g("shipDone2")) || parseDate(g("ship"));
+    const it = { code: normWb(g("code")), product: str(g("product")), qty, amount };
+    const e = list.map(w => out[w]).find(Boolean) || { mall, name: str(g("name")), ship, items: [] };
+    if (!e.mall) e.mall = mall;
+    if (!e.name) e.name = str(g("name"));
+    if (!e.ship) e.ship = ship;
+    if ((it.code || it.product) && !e.items.some(x => x.code === it.code && x.product === it.product)) e.items.push(it);
+    list.forEach(w => { out[w] = e; });
+  });
+  // 용량 절약: 빈 값은 저장하지 않음
+  Object.keys(out).forEach(w => {
+    const e = out[w], c = {};
+    ["mall", "name", "ship"].forEach(k => { if (has(e[k])) c[k] = e[k]; });
+    c.items = e.items.map(i => { const o = {}; ["code", "product", "qty", "amount"].forEach(k => { if (has(i[k])) o[k] = i[k]; }); return o; });
+    out[w] = c;
+  });
+  return out;
+}
+
+class Component extends DCLogic {
+  state = {
+    tab: this.props.defaultTab === "품목현황" ? "items" : "claims",
+    items: load(K.items, []), claims: load(K.claims, []), wb: load(K.wb, {}), log: load(K.log, []),
+    itemQ: "", itemTemp: "", itemUse: "", claimQ: "", claimKind: "", claimStatus: "", month: today().slice(0, 7), wbQ: "", wbPw: "",
+    edit: null, editErr: "", paste: null, msg: "", syncSt: { state: "off" }, syncOpen: false
+  };
+
+  componentDidMount() {
+    import("./bg-sync.js?v=4").then(() => {
+      const S = window.BgSync;
+      S.onStatus(st => this.setState({ syncSt: st }));
+      S.onData(initial => { if (initial === false && !S.ready()) return; if (initial) this.applyRemote(true); else { clearTimeout(this._rt); this._rt = setTimeout(() => this.applyRemote(false), 120); } });
+      this.seed();
+      if (!S.url()) this.prune(true);
+      S.onStatus(st => { if (st.state === "error" && /bg/.test(st.msg) && !this._ruleShown) { this._ruleShown = true; this.setState({ syncOpen: true, syncUrlDraft: S.url(), syncNameDraft: S.name(), syncErr: st.msg }); } });
+      if (S.url()) S.start();
+    });
+  }
+  async seed() {
+    if (this.state.items.length || localStorage.getItem(K.items)) return;
+    const m = await import("./bg-items-db.js");
+    this.setState({ items: m.ITEMS }); this.persist("items", m.ITEMS);
+  }
+  persist(k, v) { try { localStorage.setItem(K[k], JSON.stringify(v)); } catch (e) { if (!this._warned) { this._warned = true; this.toast("이 컴퓨터 저장공간이 부족합니다. 실시간 공유를 켜두세요."); } } }
+  toast(msg) { this.setState({ msg }); clearTimeout(this._mt); this._mt = setTimeout(() => this.setState({ msg: "" }), 4000); }
+  live() { const S = window.BgSync; return S && S.url() ? S : null; }
+
+  async applyRemote(initial) {
+    const S = window.BgSync;
+    if (initial) {
+      const jk = "bg_joined:" + S.url();
+      if (!localStorage.getItem(jk)) {
+        ["items", "claims", "log"].forEach(c => { const ids = new Set(S.list(c).map(x => x.id)); (this.state[c] || []).forEach(x => { if (!ids.has(x.id)) S.put(c, x); }); });
+        const rw = new Set(S.list("wb").map(x => x.id));
+        Object.keys(this.state.wb).forEach(id => { if (!rw.has(id)) S.put("wb", Object.assign({ id }, this.state.wb[id])); });
+        localStorage.setItem(jk, "1");
+      }
+      if (!S.list("items").length) { const m = await import("./bg-items-db.js"); m.ITEMS.forEach(x => S.put("items", x)); }
+    }
+    const wb = {}; S.list("wb").forEach(x => { wb[x.id] = x; });
+    const next = { items: S.list("items"), claims: S.list("claims"), wb, log: S.list("log").sort((a, b) => b.at - a.at).slice(0, 500) };
+    this.setState(next);
+    Object.keys(next).forEach(k => this.persist(k, next[k]));
+    if (initial) this.prune(true);
+  }
+
+  isAdmin() { const S = this.live(); return !S || (S.isOwner && S.isOwner()); }
+  clearLog() {
+    const ids = this.state.log.map(l => l.id);
+    if (!ids.length) return;
+    if (!this.isAdmin()) return this.toast("변경 이력 전체 삭제는 관리자만 할 수 있습니다");
+    if (!window.confirm("변경 이력 " + ids.length + "건을 모두 삭제할까요?\n같이 쓰는 모든 사람의 이력이 지워집니다.")) return;
+    const S = this.live();
+    this.setState({ log: [] }); this.persist("log", []);
+    if (S) S.list("log").forEach(l => S.del("log", l.id));
+    this.toast("변경 이력을 모두 삭제했습니다");
+  }
+  linkedWbs() { const s = new Set(); this.state.claims.forEach(c => { if (c.wb) s.add(normWb(c.wb)); }); return s; }
+  retention() { return Math.max(1, Number(this.props.keepMonths) || 6); }
+  // 보관 기간이 지난 통합내역 정리 (클레임에 연결된 송장은 보관)
+  prune(auto) {
+    if (auto && this._pruned) return;
+    this._pruned = true;
+    const cut = monthsAgo(this.retention()), linked = this.linkedWbs();
+    const dels = Object.keys(this.state.wb).filter(id => { const sh = this.state.wb[id].ship; return sh && sh.slice(0, 7) < cut && !linked.has(id); });
+    if (!dels.length) return;
+    this.commit("wb", [], dels, { action: "통합내역 자동 정리", target: cut + " 이전 출고 " + dels.length + "건 (보관 " + this.retention() + "개월)" });
+  }
+  delWbMonth(m) {
+    const linked = this.linkedWbs(), ids = Object.keys(this.state.wb).filter(id => (this.state.wb[id].ship || "").slice(0, 7) === m);
+    const dels = ids.filter(id => !linked.has(id)), keep = ids.length - dels.length;
+    if (!dels.length) return this.toast("지울 송장이 없습니다 (모두 클레임에 연결됨)");
+    if (!window.confirm(m + " 출고 통합내역 " + dels.length + "건을 삭제할까요?" + (keep ? "\n클레임에 연결된 " + keep + "건은 남겨둡니다." : ""))) return;
+    this.commit("wb", [], dels, { action: "통합내역 월 삭제", target: m + " · " + dels.length + "건" });
+    this.toast(m + " 통합내역 " + dels.length + "건 삭제");
+  }
+
+  commit(coll, upserts, dels, logEntry) {
+    const S = this.live(), by = (S && S.name()) || (window.BgSync && window.BgSync.name()) || "", at = Date.now();
+    upserts = (upserts || []).map(x => coll === "wb" ? x : Object.assign({}, x, { _at: at, _by: by }));
+    dels = dels || [];
+    const lg = logEntry ? Object.assign({ id: uid(), at, by }, logEntry) : null;
+    const p = this.state;
+    let next;
+    if (coll === "wb") { next = Object.assign({}, p.wb); upserts.forEach(x => { next[x.id] = x; }); dels.forEach(id => { delete next[id]; }); }
+    else { const m = new Map(p[coll].map(x => [x.id, x])); upserts.forEach(x => m.set(x.id, x)); dels.forEach(id => m.delete(id)); next = Array.from(m.values()); }
+    const log = lg ? [lg, ...p.log].slice(0, 500) : p.log;
+    this.setState({ [coll]: next, log });
+    this.persist(coll, next); if (lg) this.persist("log", log);
+    if (S) { upserts.forEach(x => S.put(coll, x)); dels.forEach(id => S.del(coll, id)); if (lg) S.put("log", lg); }
+  }
+
+  readBook(file, pw) {
+    return file.arrayBuffer().then(async buf => {
+      if (typeof XLSX === "undefined") throw new Error("엑셀 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도하세요");
+      if (window.OfficeDecrypt && OfficeDecrypt.isEncrypted(buf)) {
+        if (!pw) throw new Error("암호가 걸린 파일입니다. 비밀번호를 먼저 입력하세요");
+        buf = await OfficeDecrypt.decrypt(buf, pw);
+      }
+      return XLSX.read(buf, { type: "array", cellDates: false });
+    });
+  }
+  sheetRows(wbk, name) {
+    const ws = wbk.Sheets[name];
+    // 일부 시스템 엑셀은 시트 범위(!ref)가 1행으로 잘못 저장돼 있어 실제 셀로 다시 계산
+    let r = 0, c = 0;
+    Object.keys(ws).forEach(k => { if (k[0] === "!") return; const a = XLSX.utils.decode_cell(k); if (a.r > r) r = a.r; if (a.c > c) c = a.c; });
+    ws["!ref"] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r, c } });
+    return XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: true });
+  }
+
+  async onItemFile(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try {
+      const wbk = await this.readBook(f, "");
+      const list = parseItemRows(this.sheetRows(wbk, wbk.SheetNames[0]));
+      if (!list.length) return this.toast("품목을 찾지 못했습니다. 상품명/상품코드 헤더를 확인하세요");
+      const ids = new Set(list.map(x => x.id)), gone = this.state.items.filter(x => !ids.has(x.id)).map(x => x.id);
+      if (!window.confirm("품목현황을 이 파일로 바꿉니다.\n\n파일 품목 " + list.length + "개 · 파일에 없는 기존 품목 " + gone.length + "개 삭제\n\n계속할까요?")) return;
+      this.commit("items", list, gone, { action: "품목 엑셀 업로드", target: f.name + " · " + list.length + "개" });
+      this.toast("품목 " + list.length + "개로 바꿨습니다");
+    } catch (err) { this.toast("파일을 읽지 못했습니다: " + err.message); }
+  }
+
+  async onWbFile(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    this.setState({ wbBusy: true });
+    try {
+      const wbk = await this.readBook(f, this.state.wbPw);
+      const has = n => this.sheetRows(wbk, n).slice(0, 10).some(r => r.some(c => /송장번호/.test(normH(c))));
+      const name = wbk.SheetNames.find(n => /통합(내역|관리)/.test(normH(n))) || wbk.SheetNames.find(has) || wbk.SheetNames[0];
+      const map = parseWbRows(this.sheetRows(wbk, name));
+      const ids = map ? Object.keys(map) : [];
+      if (!ids.length) { this.setState({ wbBusy: false }); return this.toast("송장번호 데이터를 찾지 못했습니다. 헤더(송장번호)를 확인하세요"); }
+      this.commit("wb", ids.map(id => Object.assign({ id }, map[id])), [], { action: "통합내역 업로드", target: f.name + " · 송장 " + ids.length + "건" });
+      const linked = this.state.claims.map(c => this.fillFromWb(c, map[c.wb], false)).filter(Boolean);
+      if (linked.length) this.commit("claims", linked, [], { action: "클레임 자동 채움", target: linked.length + "건 (통합내역 연동)" });
+      this.setState({ wbBusy: false });
+      const before = Object.keys(this.state.wb).length;
+      this._pruned = false; this.prune(false);
+      const pruned = before - Object.keys(this.state.wb).length;
+      if (pruned) this.toast("송장 " + ids.length + "건 저장 · 보관 기간 지난 " + pruned + "건 정리");
+      else this.toast("송장 " + ids.length + "건 저장" + (linked.length ? " · 클레임 " + linked.length + "건 빈 칸 채움" : ""));
+    } catch (err) { this.setState({ wbBusy: false }); this.toast("파일을 읽지 못했습니다: " + err.message); }
+  }
+
+  // 통합내역 값으로 빈 칸만 채움. 바뀐 게 없으면 null
+  fillFromWb(c, w, force) {
+    if (!w) return null;
+    const n = Object.assign({}, c);
+    const set = (k, v) => { if ((force || n[k] === "" || n[k] == null) && v !== "" && v != null) n[k] = v; };
+    set("mall", w.mall); set("name", w.name); set("ship", w.ship);
+    const it = (w.items || []).find(x => (c.code && x.code === c.code) || (c.product && x.product === c.product)) || ((w.items || []).length === 1 ? w.items[0] : null);
+    if (it) { set("code", it.code); set("product", it.product); set("qty", it.qty); set("amount", it.amount); }
+    return CLAIM_F.some(k => n[k] !== c[k]) ? n : null;
+  }
+
+  openItem(x) { this.setState({ edit: { kind: "item", isNew: !x, draft: Object.assign({ code: "", sku: "", name: "", barcode: "", temp: "", unit: "EA", type: "단일상품", use: "사용", price: "", memo: "" }, x || {}) }, editErr: "" }); }
+  openClaim(x) {
+    const d = Object.assign({ recv: today(), ship: "", wb: "", mall: "", name: "", kind: "택배사고", reason: "", code: "", product: "", qty: "", amount: "", rewb: "", fee: "", memo: "", status: "접수" }, x || {});
+    const w = this.state.wb[normWb(d.wb)], its = (w && w.items) || [];
+    const sel = x ? its.map((i, k) => k).filter(k => (d.code && its[k].code === d.code) || (!d.code && d.product && its[k].product === d.product)).slice(0, 1) : [];
+    this.setState({ edit: { kind: "claim", isNew: !x, draft: d }, editErr: "", wbSel: sel });
+  }
+  applySel(sel) {
+    const e = this.state.edit; if (!e) return;
+    const w = this.state.wb[normWb(e.draft.wb)], its = (w && w.items) || [], d = Object.assign({}, e.draft);
+    if (sel.length === 1) { const it = its[sel[0]]; Object.assign(d, { code: it.code || "", product: it.product || "", qty: has(it.qty) ? it.qty : "", amount: has(it.amount) ? it.amount : "" }); }
+    else if (sel.length > 1) { Object.assign(d, { code: its[sel[0]].code, product: its[sel[0]].product + " 외 " + (sel.length - 1) + "개", qty: sel.reduce((a, k) => a + (Number(its[k].qty) || 0), 0), amount: sel.reduce((a, k) => a + (Number(its[k].amount) || 0), 0) }); }
+    this.setState({ wbSel: sel, edit: Object.assign({}, e, { draft: d }) });
+  }
+  setDraft(k, v) { this.setState(p => ({ edit: Object.assign({}, p.edit, { draft: Object.assign({}, p.edit.draft, { [k]: v }) }) })); }
+
+  saveItem() {
+    const e = this.state.edit, d = e.draft, code = str(d.code);
+    if (!code || !str(d.name)) return this.setState({ editErr: "상품코드와 상품명을 입력하세요" });
+    if (e.isNew && this.state.items.some(x => x.id === code)) return this.setState({ editErr: "이미 있는 상품코드입니다" });
+    const obj = Object.assign({}, d, { id: code, code, reg: d.reg || today() });
+    this.commit("items", [obj], [], { action: e.isNew ? "품목 추가" : "품목 수정", target: obj.name + " (" + code + ")" });
+    this.setState({ edit: null });
+  }
+  delItem() {
+    const d = this.state.edit.draft;
+    if (!window.confirm(d.name + " 품목을 삭제할까요?")) return;
+    this.commit("items", [], [d.id], { action: "품목 삭제", target: d.name + " (" + d.code + ")" });
+    this.setState({ edit: null });
+  }
+  saveClaim() {
+    const e = this.state.edit, d = Object.assign({}, e.draft, { wb: normWb(e.draft.wb) });
+    if (!d.wb) return this.setState({ editErr: "운송장번호를 입력하세요" });
+    d.qty = num(d.qty); d.amount = num(d.amount); d.fee = num(d.fee);
+    if (!d.id) d.id = uid();
+    const w = this.state.wb[d.wb], its = (w && w.items) || [], sel = (this.state.wbSel || []).filter(k => its[k]);
+    let rows = [d];
+    if (its.length > 1 && sel.length > 1) {
+      rows = sel.map((k, n) => Object.assign({}, d, { id: n === 0 ? d.id : uid(), code: its[k].code || "", product: its[k].product || "", qty: has(its[k].qty) ? its[k].qty : "", amount: has(its[k].amount) ? its[k].amount : "", fee: n === 0 ? d.fee : "" }));
+    }
+    this.commit("claims", rows, [], { action: e.isNew ? "클레임 등록" : "클레임 수정", target: d.wb + " · " + (d.name || "") + " · " + d.kind + (rows.length > 1 ? " · 품목 " + rows.length + "개" : "") });
+    this.setState({ edit: null, wbSel: [] });
+  }
+  delClaim() {
+    const d = this.state.edit.draft;
+    if (!window.confirm(d.wb + " 클레임을 삭제할까요?")) return;
+    this.commit("claims", [], [d.id], { action: "클레임 삭제", target: d.wb + " · " + (d.name || "") });
+    this.setState({ edit: null });
+  }
+
+  pasteParse() {
+    const p = this.state.paste;
+    if (!p) return [];
+    if (p.kind === "items") return parseItemRows(String(p.text || "").split(/\r?\n/).map(l => l.split("\t")));
+    return parseClaimPaste(p.text);
+  }
+  runPaste() {
+    const p = this.state.paste, list = this.pasteParse();
+    if (!list.length) return this.toast("인식된 행이 없습니다");
+    if (p.kind === "items") {
+      const cur = new Map(this.state.items.map(x => [x.id, x]));
+      const ups = list.map(x => { const o = cur.get(x.id); if (!o) return x; const m = Object.assign({}, o); Object.keys(x).forEach(k => { if (x[k] !== "") m[k] = x[k]; }); return m; });
+      this.commit("items", ups, [], { action: "품목 붙여넣기", target: ups.length + "개" });
+      this.toast("품목 " + ups.length + "개 반영");
+    } else {
+      const ups = list.map(x => {
+        const base = { id: uid(), recv: today(), ship: "", wb: x.wb, mall: "", name: "", kind: KINDS.includes(x.kind) ? x.kind : (KINDS.includes(x.reason) ? x.reason : "택배사고"), reason: REASONS.includes(x.reason) ? x.reason : (REASONS.includes(x.kind) ? x.kind : x.reason), code: "", product: "", qty: "", amount: "", rewb: "", fee: "", memo: x.memo, status: "접수" };
+        return this.fillFromWb(base, this.state.wb[x.wb], false) || base;
+      });
+      const hit = list.filter(x => this.state.wb[x.wb]).length;
+      this.commit("claims", ups, [], { action: "클레임 붙여넣기", target: ups.length + "건" });
+      this.setState({ month: today().slice(0, 7) });
+      this.toast("클레임 " + ups.length + "건 등록 · 통합내역 연동 " + hit + "건");
+    }
+    this.setState({ paste: null });
+  }
+
+  async exportXlsx(title, headers, rows) {
+    if (typeof ExcelJS === "undefined") return this.toast("엑셀 모듈을 불러오지 못했습니다");
+    const wbk = new ExcelJS.Workbook(), ws = wbk.addWorksheet(title);
+    ws.addRow(headers); ws.getRow(1).font = { bold: true };
+    rows.forEach(r => ws.addRow(r));
+    ws.columns.forEach((c, i) => { c.width = Math.min(48, Math.max(10, ...[headers[i], ...rows.slice(0, 200).map(r => r[i])].map(v => String(v == null ? "" : v).length * 1.6))); });
+    const buf = await wbk.xlsx.writeBuffer();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    a.download = "빙그레_" + title + "_" + today() + ".xlsx"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  syncVals() {
+    const s = this.state, st = s.syncSt || { state: "off" }, S = window.BgSync, on = !!(S && S.url());
+    const dot = { on: "🟢", connecting: "🟡", error: "🔴" }[st.state] || "⚪";
+    const label = { on: "실시간 공유 중", connecting: "실시간 공유 연결 중", error: "실시간 공유 오류" }[st.state] || "실시간 공유 꺼짐";
+    return {
+      syncLabel: dot + " " + label,
+      syncHint: st.state === "on" ? ((S && S.name()) || "이름 없음") + " · 변경이 바로 반영됩니다" : (st.msg || "여러 명이 같은 데이터를 함께 씁니다"),
+      openSync: () => this.setState({ syncOpen: true, syncUrlDraft: (S && S.url()) || "", syncNameDraft: (S && S.name()) || "", syncErr: "" }),
+      hasSync: !!s.syncOpen, isSyncOn: on,
+      syncUrlDraft: s.syncUrlDraft || "", syncNameDraft: s.syncNameDraft || "",
+      syncErr: s.syncErr || "", hasSyncErr: !!s.syncErr,
+      onSyncUrl: e => this.setState({ syncUrlDraft: e.target.value }),
+      onSyncName: e => this.setState({ syncNameDraft: e.target.value }),
+      syncClose: () => this.setState({ syncOpen: false }),
+      syncBtnLabel: s.syncBusy ? "연결 중…" : on ? "다시 연결" : "연결",
+      syncConnect: () => {
+        if (!S || s.syncBusy) return;
+        if (!str(s.syncNameDraft)) return this.setState({ syncErr: "이름을 입력하세요" });
+        this.setState({ syncBusy: true, syncErr: "" });
+        S.configure(s.syncUrlDraft, s.syncNameDraft).then(r => {
+          if (!r.ok) return this.setState({ syncBusy: false, syncErr: r.msg });
+          this.setState({ syncBusy: false, syncOpen: false }); this.toast("실시간 공유를 켰습니다");
+        });
+      },
+      ...(() => {
+        const owner = on && S.isOwner ? S.isOwner() : false, hasPin = on && S.hasPin ? S.hasPin() : false;
+        const digits = ev => ev.target.value.replace(/\D/g, "").slice(0, 8);
+        return {
+          adminLabel: !hasPin ? "비밀번호 없음" : owner ? "이 컴퓨터는 관리자" : "일반 사용자",
+          adminGuide: !hasPin ? "처음 한 번만 관리자 비밀번호를 정합니다. 정한 뒤에는 비밀번호를 아는 사람만 관리자가 될 수 있고, 변경 이력 전체 삭제는 관리자만 할 수 있습니다."
+            : owner ? "비밀번호를 바꾸려면 현재 비밀번호와 새 비밀번호를 모두 넣어야 합니다."
+            : "관리자 비밀번호를 입력하면 이 컴퓨터가 관리자가 됩니다.",
+          showLogin: !owner, showChange: owner,
+          pinPh: hasPin ? "관리자 비밀번호" : "새 비밀번호 (숫자 4~8자리)",
+          pinBtnLabel: hasPin ? "관리자 로그인" : "비밀번호 정하기",
+          pinDraft: s.pinDraft || "", onPin: ev => this.setState({ pinDraft: digits(ev), pinMsg: "" }),
+          pinCur: s.pinCur || "", onPinCur: ev => this.setState({ pinCur: digits(ev), pinMsg: "" }),
+          pinMsg: s.pinMsg || "", hasPinMsg: !!s.pinMsg,
+          pinAction: async () => {
+            const r = hasPin ? await S.login(s.pinDraft) : await S.setPin("", s.pinDraft);
+            if (!r.ok) return this.setState({ pinMsg: r.msg });
+            this.setState({ pinDraft: "", pinMsg: "" }); this.toast(hasPin ? "관리자로 로그인했습니다" : "관리자 비밀번호를 정했습니다");
+          },
+          pinChange: async () => {
+            const r = await S.setPin(s.pinCur, s.pinDraft);
+            if (!r.ok) return this.setState({ pinMsg: r.msg });
+            this.setState({ pinDraft: "", pinCur: "", pinMsg: "" }); this.toast("관리자 비밀번호를 바꿨습니다");
+          },
+          adminLogout: () => { S.logout(); this.toast("관리자에서 로그아웃했습니다"); }
+        };
+      })(),
+      syncDisconnect: () => { S.disconnect(); this.setState({ syncOpen: false }); this.toast("공유를 끊었습니다. 이 컴퓨터에 저장된 데이터로 계속 씁니다"); }
+    };
+  }
+
+  renderVals() {
+    const s = this.state, limit = Number(this.props.rowLimit) || 300;
+    const go = t => () => this.setState({ tab: t });
+    const byLabel = x => x._by || x._at ? [x._by, when(x._at)].filter(Boolean).join(" · ") : "";
+
+    // 품목현황
+    const iq = s.itemQ.trim().toLowerCase();
+    const items = s.items.filter(x => (!s.itemTemp || x.temp === s.itemTemp) && (!s.itemUse || x.use === s.itemUse) && (!iq || [x.code, x.sku, x.name, x.barcode].some(v => String(v || "").toLowerCase().includes(iq))))
+      .sort((a, b) => String(b.reg || "").localeCompare(String(a.reg || "")) || String(a.name).localeCompare(String(b.name), "ko"));
+    const itemByName = new Map(s.items.map(x => [x.name, x]));
+
+    // 클레임
+    const inMonth = s.claims.filter(c => !s.month || String(c.recv || "").startsWith(s.month));
+    const cq = s.claimQ.trim().toLowerCase();
+    const claims = inMonth.filter(c => (!s.claimKind || c.kind === s.claimKind) && (!s.claimReason || c.reason === s.claimReason) && (!s.claimStatus || c.status === s.claimStatus) && (!cq || [c.wb, c.name, c.product, c.code, c.mall, c.memo, c.reason, c.rewb].some(v => String(v || "").toLowerCase().includes(cq))))
+      .sort((a, b) => String(b.recv || "").localeCompare(String(a.recv || "")) || (b._at || 0) - (a._at || 0));
+    const cnt = st => inMonth.filter(c => c.status === st).length;
+    const openCount = s.claims.filter(c => c.status !== "완료").length;
+    const SEG = "height:30px;padding:0 12px;border:0;border-radius:6px;font-size:12.5px;cursor:pointer;";
+    const statusTabs = [["", "전체 " + inMonth.length], ...STATUS.map(x => [x, x + " " + cnt(x)])].map(([v, label]) => ({
+      label, onClick: () => this.setState({ claimStatus: v }),
+      style: SEG + (s.claimStatus === v ? "background:#0F172A;color:#fff;font-weight:700" : "background:transparent;color:#4B5563")
+    }));
+
+    // 통합내역
+    const wbIds = Object.keys(s.wb), wq = s.wbQ.trim().toLowerCase();
+    const wbList = wbIds.map(id => Object.assign({ id }, s.wb[id])).filter(w => !wq || w.id.includes(wq) || String(w.name || "").toLowerCase().includes(wq) || (w.items || []).some(i => String(i.product || "").toLowerCase().includes(wq) || String(i.code || "").includes(wq)))
+      .sort((a, b) => String(b.ship || "").localeCompare(String(a.ship || "")));
+
+    // 수정 창
+    const e = s.edit, d = e ? e.draft : {};
+    const fieldHandlers = keys => { const o = {}; keys.forEach(k => { o[k] = ev => this.setDraft(k, ev.target.value); }); return o; };
+    const w = e && e.kind === "claim" ? s.wb[normWb(d.wb)] : null;
+    const wbLen = e && e.kind === "claim" ? normWb(d.wb).length : 0;
+
+    // 붙여넣기
+    const p = s.paste, parsed = p ? this.pasteParse() : [];
+
+    return Object.assign(this.syncVals(), {
+      isItems: s.tab === "items", isClaims: s.tab === "claims", isWb: s.tab === "wb", isLog: s.tab === "log",
+      navItems: s.tab === "items" ? NAV_ON : NAV_OFF, navClaims: s.tab === "claims" ? NAV_ON : NAV_OFF, navWb: s.tab === "wb" ? NAV_ON : NAV_OFF, navLog: s.tab === "log" ? NAV_ON : NAV_OFF,
+      goItems: go("items"), goClaims: go("claims"), goWb: go("wb"), goLog: go("log"),
+      hasOpenClaims: openCount > 0, openClaimCount: openCount,
+      stop: ev => ev.stopPropagation(),
+      kinds: KINDS, reasons: REASONS, statuses: STATUS,
+      claimReason: s.claimReason || "", onClaimReason: ev => this.setState({ claimReason: ev.target.value }),
+
+      itemQ: s.itemQ, itemTemp: s.itemTemp, itemUse: s.itemUse,
+      onItemQ: ev => this.setState({ itemQ: ev.target.value }), onItemTemp: ev => this.setState({ itemTemp: ev.target.value }), onItemUse: ev => this.setState({ itemUse: ev.target.value }),
+      itemCount: items.length === s.items.length ? "전체 " + fmt(s.items.length) + "개" : fmt(items.length) + "개 / 전체 " + fmt(s.items.length) + "개",
+      itemRows: items.slice(0, limit).map(x => Object.assign({}, x, { byLabel: byLabel(x), tempStyle: "padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:600;" + (TEMP_STYLE[x.temp] || "color:#4B5563"), onClick: () => this.openItem(x) })),
+      itemOverflow: items.length > limit, itemOverflowLabel: "앞의 " + limit + "개만 보여요. 검색으로 좁혀보세요 (" + fmt(items.length) + "개)",
+      noItems: !items.length,
+      onItemFile: ev => this.onItemFile(ev),
+      newItem: () => this.openItem(null),
+      openItemPaste: () => this.setState({ paste: { kind: "items", text: "" } }),
+      exportItems: () => this.exportXlsx("품목현황", ITEM_ORDER.concat(["reg"]).map(k => ITEM_LABEL[k]), items.map(x => ITEM_ORDER.concat(["reg"]).map(k => x[k] == null ? "" : x[k]))),
+
+      month: s.month, onMonth: ev => this.setState({ month: ev.target.value }),
+      claimQ: s.claimQ, onClaimQ: ev => this.setState({ claimQ: ev.target.value }),
+      claimKind: s.claimKind, onClaimKind: ev => this.setState({ claimKind: ev.target.value }),
+      statusTabs, claimCount: fmt(claims.length) + "건",
+      claimRows: claims.map(c => Object.assign({}, c, {
+        amountLabel: fmt(c.amount), feeLabel: fmt(c.fee), byLabel: byLabel(c),
+        stStyle: "height:28px;padding:0 6px;border:1px solid;border-radius:6px;font-size:12px;font-weight:700;outline:none;cursor:pointer;" + (ST_STYLE[c.status] || ""),
+        onClick: () => this.openClaim(c), stop: ev => ev.stopPropagation(),
+        onStatus: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { status: v })], [], { action: "상태 변경", target: c.wb + " · " + (c.status || "") + " → " + v }); }
+      })),
+      noClaims: !claims.length, noClaimsLabel: s.claims.length ? "🍨 조건에 맞는 클레임이 없습니다" : "🍨 등록된 클레임이 없습니다. + 클레임 등록이나 송장 붙여넣기로 시작하세요.",
+      newClaim: () => this.openClaim(null),
+      openClaimPaste: () => this.setState({ paste: { kind: "claims", text: "" } }),
+      exportClaims: () => this.exportXlsx("클레임", CLAIM_F.map(k => CLAIM_LABEL[k]).concat(["수정자", "수정시각"]), claims.map(c => CLAIM_F.map(k => c[k] == null ? "" : c[k]).concat([c._by || "", when(c._at)]))),
+
+      wbPw: s.wbPw, onWbPw: ev => this.setState({ wbPw: ev.target.value }),
+      wbQ: s.wbQ, onWbQ: ev => this.setState({ wbQ: ev.target.value }),
+      onWbFile: ev => this.onWbFile(ev), wbBtnLabel: s.wbBusy ? "읽는 중…" : "통합내역 엑셀 올리기",
+      wbCount: "송장 " + fmt(wbIds.length) + "건" + (wq ? " 중 " + fmt(wbList.length) + "건" : ""),
+      ...(() => {
+        const linked = new Set(s.claims.map(c => normWb(c.wb))), by = {};
+        wbIds.forEach(id => { const w = s.wb[id], m = (w.ship || "").slice(0, 7) || "날짜 없음"; const o = by[m] || (by[m] = { n: 0, link: 0, bytes: 0 }); o.n++; if (linked.has(id)) o.link++; o.bytes += id.length + JSON.stringify(w).length; });
+        const total = Object.values(by).reduce((a, o) => a + o.bytes, 0), cut = monthsAgo(this.retention());
+        const kb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(b / 1024)) + "KB";
+        return {
+          wbMonths: Object.keys(by).sort().reverse().map(m => ({ month: m, countLabel: fmt(by[m].n) + "건", linkLabel: by[m].link ? "클레임 " + by[m].link + "건 보관" : "", sizeLabel: "약 " + kb(by[m].bytes), old: m !== "날짜 없음" && m < cut, canDel: m !== "날짜 없음", onDel: () => this.delWbMonth(m) })),
+          hasWbMonths: wbIds.length > 0,
+          wbStoreLabel: "전체 " + fmt(wbIds.length) + "건 · 약 " + kb(total),
+          wbKeepLabel: "출고일 기준 " + this.retention() + "개월(" + cut + " 이전)이 지난 송장은 자동 정리됩니다. 클레임에 연결된 송장은 기간과 상관없이 남습니다."
+        };
+      })(),
+      wbRows: wbList.slice(0, limit).map(w => ({ id: w.id, ship: w.ship, mall: w.mall, name: w.name, itemsLabel: (w.items || []).map(i => i.product + (has(i.qty) ? " ×" + i.qty : "")).join(", "), amountLabel: fmt((w.items || []).reduce((a, i) => a + (Number(i.amount) || 0), 0)) })),
+      wbOverflow: wbList.length > limit, wbOverflowLabel: "앞의 " + limit + "건만 보여요. 검색으로 좁혀보세요", noWb: !wbIds.length,
+
+      logRows: s.log.map(l => ({ when: when(l.at), byLabel: l.by || "이름 없음", action: l.action, target: l.target })), noLog: !s.log.length, hasLog: s.log.length > 0, clearLog: () => this.clearLog(),
+      logCanClear: s.log.length > 0 && this.isAdmin(), logNotAdmin: s.log.length > 0 && !this.isAdmin(),
+      goPhoto: () => this.setState({ tab: "photo", photoSeen: true }), navPhoto: s.tab === "photo" ? NAV_ON : NAV_OFF,
+      keepPhoto: !!s.photoSeen || s.tab === "photo", dispPhoto: s.tab === "photo" ? "flex" : "none",
+
+      hasItemEdit: !!(e && e.kind === "item"), hasClaimEdit: !!(e && e.kind === "claim"),
+      itemEditTitle: e && e.isNew ? "품목 추가" : "품목 수정", claimEditTitle: e && e.isNew ? "클레임 등록" : "클레임 수정",
+      itemLocked: !!(e && !e.isNew), claimLocked: !!(e && !e.isNew),
+      idr: d, cdr: d,
+      idf: fieldHandlers(ITEM_ORDER), cdf: fieldHandlers(CLAIM_F),
+      editErr: s.editErr, hasEditErr: !!s.editErr,
+      closeEdit: () => this.setState({ edit: null }),
+      saveItem: () => this.saveItem(), delItem: () => this.delItem(),
+      saveClaim: () => this.saveClaim(), delClaim: () => this.delClaim(),
+      onClaimWb: ev => {
+        const v = ev.target.value, wbe = s.wb[normWb(v)];
+        const nd = Object.assign({}, s.edit.draft, { wb: v });
+        const its = (wbe && wbe.items) || [];
+        this.setState({ edit: Object.assign({}, s.edit, { draft: this.fillFromWb(nd, wbe, false) || nd }), wbSel: its.length > 1 ? its.map((i, k) => k) : [] });
+        if (its.length > 1) setTimeout(() => this.applySel(its.map((i, k) => k)), 0);
+      },
+      wbFound: !!w, wbMissing: !w && wbLen >= 10,
+      wbFoundLabel: w ? [w.mall, w.name, w.ship].filter(Boolean).join(" · ") : "",
+      hasWbOpts: !!(w && (w.items || []).length > 1),
+      wbOptCount: w ? (w.items || []).length : 0,
+      wbOpts: w ? (w.items || []).map((i, k) => ({
+        product: i.product, code: i.code, qtyLabel: has(i.qty) ? "×" + i.qty : "", amountLabel: has(i.amount) ? fmt(i.amount) + "원" : "",
+        checked: (s.wbSel || []).includes(k),
+        onToggle: () => { const cur = s.wbSel || []; this.applySel(cur.includes(k) ? cur.filter(x => x !== k) : cur.concat([k]).sort((a, b) => a - b)); }
+      })) : [],
+      wbSelLabel: (s.wbSel || []).length ? (s.wbSel || []).length + "개 선택" : "선택 없음",
+      wbSelHint: (s.wbSel || []).length > 1 ? "저장하면 선택한 품목마다 클레임이 한 줄씩 등록됩니다 (택배비는 첫 줄에만)" : (s.wbSel || []).length === 1 ? "선택한 품목 1개로 등록됩니다" : "클레임 대상 품목을 선택하세요",
+      wbSelAll: () => this.applySel(((w && w.items) || []).map((i, k) => k)),
+      wbSelNone: () => this.applySel([]),
+      onClaimProduct: ev => {
+        const v = ev.target.value, it = itemByName.get(v);
+        this.setState({ edit: Object.assign({}, s.edit, { draft: Object.assign({}, s.edit.draft, { product: v }, it && !s.edit.draft.code ? { code: it.code } : {}) }) });
+      },
+      itemNames: e && e.kind === "claim" ? s.items.map(x => x.name) : [],
+
+      hasPaste: !!p, pasteText: p ? p.text : "",
+      pasteTitle: p && p.kind === "items" ? "품목 붙여넣기" : "클레임 송장 붙여넣기",
+      pasteGuide: p && p.kind === "items" ? "엑셀에서 헤더 행까지 같이 복사해 붙여넣으면 열을 알아서 맞춰요. 헤더가 없으면 상품코드 · 업체 품목코드 · 상품명 · 바코드 · 보관온도 · 단위 · 상품구분 · 사용 · 정가 · 비고 순서로 읽어요. 같은 상품코드는 값이 있는 칸만 덮어씁니다." : "한 줄에 한 건 · 송장번호 [탭] 구분(택배사고/아워사고) [탭] 사유 [탭] 비고 순서입니다. 송장번호만 넣어도 되고, 통합내역에 있는 송장은 쇼핑몰 · 수취인 · 출고일 · 품목이 자동으로 채워져요. 접수일은 오늘로 들어갑니다.",
+      pastePreview: p && p.text ? (parsed.length ? (p.kind === "items" ? "품목 " + parsed.length + "개 인식" : "송장 " + parsed.length + "건 인식 · 통합내역 연동 " + parsed.filter(x => s.wb[x.wb]).length + "건") : "인식된 행이 없습니다") : "",
+      onPasteText: ev => this.setState({ paste: Object.assign({}, s.paste, { text: ev.target.value }) }),
+      closePaste: () => this.setState({ paste: null }), runPaste: () => this.runPaste(),
+
+      msg: s.msg, hasMsg: !!s.msg
+    });
+  }
+}
+</script>
+</body>
+</html>
