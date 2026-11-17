@@ -41,6 +41,9 @@
         <sc-if value="{{ hasOpenClaims }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700">{{ openClaimCount }}</span></sc-if>
       </div>
       <div onClick="{{ goPhoto }}" style="{{ navPhoto }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍡</span>반품사진</div>
+      <div onClick="{{ goRet }}" style="{{ navRet }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍫</span>반품리스트
+        <sc-if value="{{ hasRetUnlinked }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700">{{ retUnlinkedCount }}</span></sc-if>
+      </div>
       <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기록</div>
       <div onClick="{{ goLog }}" style="{{ navLog }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🥛</span>변경 이력</div>
     </div>
@@ -288,6 +291,74 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ isRet }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">클레임</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍫</span>반품리스트</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <label style="height:36px;display:inline-flex;align-items:center;padding:0 14px;border:1px solid #D63370;border-radius:8px;background:#fff;font-size:12.5px;font-weight:700;color:#D63370;cursor:pointer" style-hover="background:#FFEEF4">엑셀 업로드<input type="file" accept=".xlsx,.xls" onChange="{{ onRetFile }}" style="display:none"></input></label>
+          <button onClick="{{ exportRet }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">엑셀 내보내기</button>
+          <button onClick="{{ newRet }}" style="height:36px;padding:0 16px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">+ 반품 등록</button>
+        </div>
+      </header>
+      <div style="padding:20px 32px 40px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="month" value="{{ retMonth }}" onChange="{{ onRetMonth }}" style="height:36px;padding:0 10px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box"></input>
+          <input type="text" placeholder="이름 · 원송장 · 반품송장 · 품명 · 특이사항" value="{{ retQ }}" onChange="{{ onRetQ }}" style="width:280px;max-width:100%;height:36px;padding:0 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;background:#fff;outline:none;box-sizing:border-box" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input>
+          <div style="display:flex;gap:4px;padding:3px;border:1px solid #E5E7EB;border-radius:9px;background:#fff">
+            <sc-for list="{{ retTabs }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <span style="margin-left:auto;font-size:12.5px;color:#6B7280">{{ retCount }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap">
+              <thead>
+                <tr style="background:#FFF4EA;color:#7A4A2E;text-align:left">
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">입고날짜</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">이름</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">원송장</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">반품송장</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">품명</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">입고수량</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">특이사항</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">공유 완료</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ retRows }}" as="r" hint-placeholder-count="6">
+                  <tr onClick="{{ r.onClick }}" style="cursor:pointer" style-hover="background:#FFF7F1">
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ r.date }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ r.name }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ r.owb }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;font-weight:600">{{ r.rwb }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:220px">
+                      <div style="font-weight:600">{{ r.product }}</div>
+                      <div style="margin-top:3px;display:flex;align-items:center;gap:6px;font-size:11px"><span style="{{ r.codeStyle }}">{{ r.codeLabel }}</span><span style="{{ r.tempStyle }}">{{ r.temp }}</span></div>
+                    </td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;text-align:right">{{ r.qty }}</td>
+                    <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:160px;color:#4B5563">{{ r.memo }}</td>
+                    <td onClick="{{ r.onShare }}" style="padding:8px 12px;border-bottom:1px solid #F3F4F6;text-align:center;cursor:pointer" style-hover="background:#FFEEF4">
+                      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                        <input type="checkbox" checked="{{ r.shared }}" readOnly="{{ true }}" style="width:17px;height:17px;margin:0;accent-color:#D63370;pointer-events:none"></input>
+                        <span style="font-size:10.5px;color:#6B7280">{{ r.sharedLabel }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ retOverflow }}"><div style="padding:14px 20px;text-align:center;font-size:12.5px;color:#6B7280;border-top:1px solid #F3F4F6">{{ retOverflowLabel }}</div></sc-if>
+          <sc-if value="{{ noRet }}"><div style="padding:46px 20px;text-align:center;font-size:13px;color:#6B7280">{{ noRetLabel }}</div></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
       <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
         <div>
@@ -422,6 +493,43 @@
   </div>
 </sc-if>
 
+<sc-if value="{{ hasRetEdit }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEdit }}" style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ stop }}" style="width:620px;max-width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #E5E7EB">
+        <div style="font-size:15px;font-weight:700">{{ retEditTitle }}</div>
+        <button onClick="{{ closeEdit }}" style="width:28px;height:28px;border:1px solid #E5E7EB;border-radius:7px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer">✕</button>
+      </div>
+      <div style="padding:18px 22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">입고날짜<input type="date" value="{{ rdr.date }}" onChange="{{ rdf.date }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%"></input></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">이름<input value="{{ rdr.name }}" onChange="{{ rdf.name }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:5px">
+          <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">원송장<input value="{{ rdr.owb }}" onChange="{{ onRetOwb }}" placeholder="통합내역에서 이름 · 품명 자동 채움" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+          <sc-if value="{{ retWbFound }}"><div style="font-size:12px;color:#166534">✓ 통합내역 · {{ retWbLabel }}</div></sc-if>
+        </div>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">반품송장<input value="{{ rdr.rwb }}" onChange="{{ rdf.rwb }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <div style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px">
+          <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">품명 *<input list="bg-ret-items" value="{{ rdr.product }}" onChange="{{ onRetProduct }}" placeholder="상품명 · 상품코드 · 업체코드 · 바코드로 검색" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+          <sc-if value="{{ retLinked }}"><div style="font-size:12px;color:#166534">✓ 품목현황 연결 · {{ retLinkLabel }}</div></sc-if>
+          <sc-if value="{{ retUnlinkedDraft }}"><div style="font-size:12px;color:#92400E">품목현황에 없는 품명입니다. 목록에서 고르면 연결됩니다.</div></sc-if>
+        </div>
+        <datalist id="bg-ret-items"><sc-for list="{{ retItemOpts }}" as="n" hint-placeholder-count="0"><option value="{{ n.name }}">{{ n.hint }}</option></sc-for></datalist>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">입고수량<input type="number" value="{{ rdr.qty }}" onChange="{{ rdf.qty }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
+        <div></div>
+        <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">특이사항<textarea value="{{ rdr.memo }}" onChange="{{ rdf.memo }}" style="min-height:60px;padding:9px 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%;resize:vertical" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></textarea></label>
+        <sc-if value="{{ hasEditErr }}"><div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;background:#FBEAE9;color:#8C1D18;font-size:12.5px">{{ editErr }}</div></sc-if>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid #E5E7EB;background:#F9FAFB">
+        <div><sc-if value="{{ retLocked }}"><button onClick="{{ delRet }}" style="height:36px;padding:0 14px;border:1px solid #EFC5C0;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#8C1D18;cursor:pointer">삭제</button></sc-if></div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ closeEdit }}" style="height:36px;padding:0 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;color:#374151;cursor:pointer">취소</button>
+          <button onClick="{{ saveRet }}" style="height:36px;padding:0 18px;border:0;border-radius:8px;background:#D63370;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer" style-hover="background:#A8215A">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ hasPaste }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ closePaste }}" style="position:fixed;inset:0;z-index:50;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
     <div onClick="{{ stop }}" style="width:620px;max-width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
@@ -496,7 +604,22 @@
 </sc-if>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;defaultTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;클레임 관리&quot;,&quot;품목현황&quot;],&quot;default&quot;:&quot;클레임 관리&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rowLimit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:300,&quot;min&quot;:50,&quot;max&quot;:2000,&quot;step&quot;:50,&quot;tsType&quot;:&quot;number&quot;},&quot;keepMonths&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:1,&quot;max&quot;:24,&quot;step&quot;:1,&quot;unit&quot;:&quot;개월&quot;,&quot;tsType&quot;:&quot;number&quot;}}">
-const K = { items: "bg_items_v1", claims: "bg_claims_v1", wb: "bg_wb_v1", log: "bg_log_v1" };
+const K = { items: "bg_items_v1", claims: "bg_claims_v1", wb: "bg_wb_v1", log: "bg_log_v1", returns: "bg_returns_v1" };
+const RET_F = ["date", "name", "owb", "rwb", "product", "qty", "memo"];
+const RET_LABEL = { date: "입고날짜", name: "이름", owb: "원송장", rwb: "반품송장", product: "품명", qty: "입고수량", memo: "특이사항" };
+const RET_H = { "입고날짜": "date", "입고일": "date", "이름": "name", "수취인": "name", "원송장": "owb", "반품송장": "rwb", "품명": "product", "상품명": "product", "품목명": "product", "입고수량": "qty", "수량": "qty", "특이사항": "memo", "비고": "memo", "상품코드": "code", "품목코드": "code" };
+const keyName = v => str(v).replace(/[\s()\[\]]/g, "").toLowerCase();
+function parseRetRows(rows) {
+  rows = rows.filter(r => r && r.some(c => str(c) !== ""));
+  const hi = rows.slice(0, 10).findIndex(r => r.some(h => RET_H[normH(h)] === "product"));
+  if (hi < 0) return [];
+  const map = {};
+  rows[hi].forEach((h, i) => { const k = RET_H[normH(h)]; if (k && map[k] === undefined) map[k] = i; });
+  return rows.slice(hi + 1).map(r => {
+    const g = k => map[k] === undefined ? "" : r[map[k]];
+    return { date: parseDate(g("date")), name: str(g("name")), owb: normWb(g("owb")), rwb: normWb(g("rwb")), product: str(g("product")), code: normWb(g("code")), qty: num(g("qty")), memo: str(g("memo")) };
+  }).filter(x => x.product || x.rwb || x.owb);
+}
 const KINDS = ["택배사고", "아워사고"];
 const REASONS = ["파손반송", "파손수령", "배송지연", "송장흐름없음", "분실", "누락", "오배송", "오출고", "기타"];
 const STATUS = ["접수", "처리중", "완료"];
@@ -592,7 +715,7 @@ function parseWbRows(rows) {
 class Component extends DCLogic {
   state = {
     tab: this.props.defaultTab === "품목현황" ? "items" : "claims",
-    items: load(K.items, []), claims: load(K.claims, []), wb: load(K.wb, {}), log: load(K.log, []),
+    items: load(K.items, []), claims: load(K.claims, []), wb: load(K.wb, {}), log: load(K.log, []), returns: load(K.returns, []), retQ: "", retMonth: today().slice(0, 7), retLink: "",
     itemQ: "", itemTemp: "", itemUse: "", claimQ: "", claimKind: "", claimStatus: "", month: today().slice(0, 7), wbQ: "", wbPw: "",
     edit: null, editErr: "", paste: null, msg: "", syncSt: { state: "off" }, syncOpen: false
   };
@@ -622,7 +745,7 @@ class Component extends DCLogic {
     if (initial) {
       const jk = "bg_joined:" + S.url();
       if (!localStorage.getItem(jk)) {
-        ["items", "claims", "log"].forEach(c => { const ids = new Set(S.list(c).map(x => x.id)); (this.state[c] || []).forEach(x => { if (!ids.has(x.id)) S.put(c, x); }); });
+        ["items", "claims", "log", "returns"].forEach(c => { const ids = new Set(S.list(c).map(x => x.id)); (this.state[c] || []).forEach(x => { if (!ids.has(x.id)) S.put(c, x); }); });
         const rw = new Set(S.list("wb").map(x => x.id));
         Object.keys(this.state.wb).forEach(id => { if (!rw.has(id)) S.put("wb", Object.assign({ id }, this.state.wb[id])); });
         localStorage.setItem(jk, "1");
@@ -630,7 +753,7 @@ class Component extends DCLogic {
       if (!S.list("items").length) { const m = await import("./bg-items-db.js"); m.ITEMS.forEach(x => S.put("items", x)); }
     }
     const wb = {}; S.list("wb").forEach(x => { wb[x.id] = x; });
-    const next = { items: S.list("items"), claims: S.list("claims"), wb, log: S.list("log").sort((a, b) => b.at - a.at).slice(0, 500) };
+    const next = { items: S.list("items"), claims: S.list("claims"), returns: S.list("returns"), wb, log: S.list("log").sort((a, b) => b.at - a.at).slice(0, 500) };
     this.setState(next);
     Object.keys(next).forEach(k => this.persist(k, next[k]));
     if (initial) this.prune(true);
@@ -747,6 +870,49 @@ class Component extends DCLogic {
     const it = (w.items || []).find(x => (c.code && x.code === c.code) || (c.product && x.product === c.product)) || ((w.items || []).length === 1 ? w.items[0] : null);
     if (it) { set("code", it.code); set("product", it.product); set("qty", it.qty); set("amount", it.amount); }
     return CLAIM_F.some(k => n[k] !== c[k]) ? n : null;
+  }
+
+  // 품명/코드/바코드로 품목현황 찾기
+  findItem(v, code) {
+    const its = this.state.items;
+    if (code) { const c = its.find(x => x.code === code); if (c) return c; }
+    const s = str(v); if (!s) return null;
+    const k = keyName(s);
+    return its.find(x => x.name === s) || its.find(x => [x.code, x.sku, x.barcode].some(c => c && String(c) === s)) || its.find(x => keyName(x.name) === k) || null;
+  }
+  linkRet(r) { const it = this.findItem(r.product, r.code); return it ? Object.assign({}, r, { code: it.code, product: r.product || it.name }) : Object.assign({}, r, { code: "" }); }
+  openRet(x) { this.setState({ edit: { kind: "ret", isNew: !x, draft: Object.assign({ date: today(), name: "", owb: "", rwb: "", product: "", code: "", qty: 1, memo: "" }, x || {}) }, editErr: "" }); }
+  saveRet() {
+    const e = this.state.edit, d = this.linkRet(Object.assign({}, e.draft, { owb: normWb(e.draft.owb), rwb: normWb(e.draft.rwb), qty: num(e.draft.qty) }));
+    if (!str(d.product)) return this.setState({ editErr: "품명을 입력하세요" });
+    if (!d.id) d.id = uid();
+    this.commit("returns", [d], [], { action: e.isNew ? "반품 등록" : "반품 수정", target: (d.rwb || d.owb || "") + " · " + d.product + (has(d.qty) ? " ×" + d.qty : "") });
+    this.setState({ edit: null, retMonth: e.isNew && d.date ? d.date.slice(0, 7) : this.state.retMonth });
+  }
+  delRet() {
+    const d = this.state.edit.draft;
+    if (!window.confirm(d.product + " 반품 건을 삭제할까요?")) return;
+    this.commit("returns", [], [d.id], { action: "반품 삭제", target: (d.rwb || d.owb || "") + " · " + d.product });
+    this.setState({ edit: null });
+  }
+  async onRetFile(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try {
+      const wbk = await this.readBook(f, "");
+      const name = wbk.SheetNames.find(n => /반품리스트/.test(n) && !(wbk.Workbook && (wbk.Workbook.Sheets || []).find(s => s.name === n && s.Hidden))) || wbk.SheetNames[0];
+      const list = parseRetRows(this.sheetRows(wbk, name));
+      if (!list.length) return this.toast("반품 행을 찾지 못했습니다. 품명 헤더를 확인하세요");
+      const sig = r => [r.date, r.owb, r.rwb, keyName(r.product), r.qty].join("|");
+      const seen = new Set(this.state.returns.map(sig));
+      const fresh = list.filter(r => !seen.has(sig(r))).map(r => Object.assign(this.linkRet(r), { id: uid() }));
+      if (!fresh.length) return this.toast("새로 추가할 행이 없습니다 (모두 등록됨)");
+      const miss = fresh.filter(r => !r.code).length;
+      this.commit("returns", fresh, [], { action: "반품 엑셀 업로드", target: f.name + " · " + fresh.length + "건" });
+      const last = fresh.map(r => r.date).filter(Boolean).sort().pop();
+      if (last) this.setState({ retMonth: last.slice(0, 7) });
+      this.toast("반품 " + fresh.length + "건 추가" + (list.length > fresh.length ? " · 중복 " + (list.length - fresh.length) + "건 제외" : "") + (miss ? " · 품목 미연결 " + miss + "건" : ""));
+    } catch (err) { this.toast("파일을 읽지 못했습니다: " + err.message); }
   }
 
   openItem(x) { this.setState({ edit: { kind: "item", isNew: !x, draft: Object.assign({ code: "", sku: "", name: "", barcode: "", temp: "", unit: "EA", type: "단일상품", use: "사용", price: "", memo: "" }, x || {}) }, editErr: "" }); }
@@ -923,8 +1089,23 @@ class Component extends DCLogic {
     const wbList = wbIds.map(id => Object.assign({ id }, s.wb[id])).filter(w => !wq || w.id.includes(wq) || String(w.name || "").toLowerCase().includes(wq) || (w.items || []).some(i => String(i.product || "").toLowerCase().includes(wq) || String(i.code || "").includes(wq)))
       .sort((a, b) => String(b.ship || "").localeCompare(String(a.ship || "")));
 
+    // 반품리스트
+    const itemByCode = new Map(s.items.map(x => [x.code, x]));
+    const retAll = s.returns.map(r => { const it = (r.code && itemByCode.get(r.code)) || this.findItem(r.product); return Object.assign({}, r, { _it: it }); });
+    const unlinkedAll = retAll.filter(r => !r._it).length;
+    const rInMonth = retAll.filter(r => !s.retMonth || String(r.date || "").startsWith(s.retMonth));
+    const rq = s.retQ.trim().toLowerCase();
+    const rets = rInMonth.filter(r => (!s.retLink || (s.retLink === "sh" ? !!r.shared : s.retLink === "nsh" ? !r.shared : s.retLink === "no" ? !r._it : !!r._it)) && (!rq || [r.name, r.owb, r.rwb, r.product, r.memo, r._it && r._it.code, r._it && r._it.sku].some(v => String(v || "").toLowerCase().includes(rq))))
+      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || (b._at || 0) - (a._at || 0));
+    const retTabs = [["", "전체 " + rInMonth.length], ["yes", "연결 " + rInMonth.filter(r => r._it).length], ["no", "미연결 " + rInMonth.filter(r => !r._it).length], ["sh", "공유 완료 " + rInMonth.filter(r => r.shared).length], ["nsh", "미공유 " + rInMonth.filter(r => !r.shared).length]].map(([v, label]) => ({
+      label, onClick: () => this.setState({ retLink: v }),
+      style: SEG + (s.retLink === v ? "background:#0F172A;color:#fff;font-weight:700" : "background:transparent;color:#4B5563")
+    }));
+
     // 수정 창
     const e = s.edit, d = e ? e.draft : {};
+    const rIt = e && e.kind === "ret" ? this.findItem(d.product, d.code) : null;
+    const rW = e && e.kind === "ret" ? s.wb[normWb(d.owb)] : null;
     const fieldHandlers = keys => { const o = {}; keys.forEach(k => { o[k] = ev => this.setDraft(k, ev.target.value); }); return o; };
     const w = e && e.kind === "claim" ? s.wb[normWb(d.wb)] : null;
     const wbLen = e && e.kind === "claim" ? normWb(d.wb).length : 0;
@@ -933,7 +1114,46 @@ class Component extends DCLogic {
     const p = s.paste, parsed = p ? this.pasteParse() : [];
 
     return Object.assign(this.syncVals(), {
-      isItems: s.tab === "items", isClaims: s.tab === "claims", isWb: s.tab === "wb", isLog: s.tab === "log",
+      isItems: s.tab === "items", isClaims: s.tab === "claims", isWb: s.tab === "wb", isLog: s.tab === "log", isRet: s.tab === "ret",
+      navRet: s.tab === "ret" ? NAV_ON : NAV_OFF, goRet: go("ret"),
+      hasRetUnlinked: unlinkedAll > 0, retUnlinkedCount: unlinkedAll,
+      retMonth: s.retMonth, onRetMonth: ev => this.setState({ retMonth: ev.target.value }),
+      retQ: s.retQ, onRetQ: ev => this.setState({ retQ: ev.target.value }),
+      retTabs, retCount: fmt(rets.reduce((a, r) => a + (Number(r.qty) || 0), 0)) + "개 · " + fmt(rets.length) + "건",
+      retRows: rets.slice(0, limit).map(r => Object.assign({}, r, {
+        qty: fmt(r.qty), byLabel: byLabel(r),
+        shared: !!r.shared, sharedLabel: r.shared ? [r.sharedBy, when(r.sharedAt)].filter(Boolean).join(" · ") : "",
+        onShare: ev => { ev.stopPropagation(); const o = Object.assign({}, r); delete o._it; const on = !o.shared, by = (window.BgSync && window.BgSync.name()) || ""; Object.assign(o, on ? { shared: true, sharedAt: Date.now(), sharedBy: by } : { shared: false, sharedAt: "", sharedBy: "" }); this.commit("returns", [o], [], { action: on ? "반품 공유 완료" : "반품 공유 취소", target: (o.rwb || o.owb || "") + " · " + o.product }); },
+        codeLabel: r._it ? r._it.code : "품목 미연결",
+        codeStyle: r._it ? "color:#6B7280" : "padding:1px 7px;border-radius:5px;background:#FEF3C7;color:#92400E;font-weight:600",
+        temp: r._it ? r._it.temp : "",
+        tempStyle: r._it && r._it.temp ? "padding:1px 7px;border-radius:5px;font-size:11px;font-weight:600;" + (TEMP_STYLE[r._it.temp] || "color:#4B5563") : "",
+        onClick: () => { const o = Object.assign({}, r); delete o._it; this.openRet(o); }
+      })),
+      retOverflow: rets.length > limit, retOverflowLabel: "앞의 " + limit + "건만 보여요. 검색으로 좁혀보세요 (" + fmt(rets.length) + "건)",
+      noRet: !rets.length, noRetLabel: s.returns.length ? "🍫 조건에 맞는 반품이 없습니다" : "🍫 등록된 반품이 없습니다. 엑셀 업로드나 + 반품 등록으로 시작하세요.",
+      newRet: () => this.openRet(null), onRetFile: ev => this.onRetFile(ev),
+      exportRet: () => this.exportXlsx("반품리스트", RET_F.map(k => RET_LABEL[k]), rets.map(r => RET_F.map(k => r[k] == null ? "" : r[k]))),
+      hasRetEdit: !!(e && e.kind === "ret"), retEditTitle: e && e.isNew ? "반품 등록" : "반품 수정", retLocked: !!(e && e.kind === "ret" && !e.isNew),
+      rdr: d, rdf: fieldHandlers(RET_F), saveRet: () => this.saveRet(), delRet: () => this.delRet(),
+      retLinked: !!rIt, retUnlinkedDraft: !rIt && !!str(d.product),
+      retLinkLabel: rIt ? [rIt.code, rIt.sku, rIt.temp].filter(Boolean).join(" · ") : "",
+      retWbFound: !!rW, retWbLabel: rW ? [rW.mall, rW.name, rW.ship].filter(Boolean).join(" · ") : "",
+      retItemOpts: e && e.kind === "ret" ? s.items.map(x => ({ name: x.name, hint: [x.code, x.sku, x.temp].filter(Boolean).join(" · ") })) : [],
+      onRetProduct: ev => {
+        const v = ev.target.value, it = this.findItem(v);
+        const conv = it && it.name !== v && [it.code, it.sku, it.barcode].some(c => c && String(c) === str(v));
+        this.setState({ edit: Object.assign({}, s.edit, { draft: Object.assign({}, s.edit.draft, { product: conv ? it.name : v, code: it ? it.code : "" }) }) });
+      },
+      onRetOwb: ev => {
+        const v = ev.target.value, w2 = s.wb[normWb(v)], nd = Object.assign({}, s.edit.draft, { owb: v });
+        if (w2) {
+          if (!str(nd.name) && w2.name) nd.name = w2.name;
+          const its = w2.items || [];
+          if (!str(nd.product) && its.length === 1) { const it = this.findItem(its[0].product, its[0].code); nd.product = it ? it.name : its[0].product; nd.code = it ? it.code : ""; if (has(its[0].qty)) nd.qty = its[0].qty; }
+        }
+        this.setState({ edit: Object.assign({}, s.edit, { draft: nd }) });
+      },
       navItems: s.tab === "items" ? NAV_ON : NAV_OFF, navClaims: s.tab === "claims" ? NAV_ON : NAV_OFF, navWb: s.tab === "wb" ? NAV_ON : NAV_OFF, navLog: s.tab === "log" ? NAV_ON : NAV_OFF,
       goItems: go("items"), goClaims: go("claims"), goWb: go("wb"), goLog: go("log"),
       hasOpenClaims: openCount > 0, openClaimCount: openCount,
