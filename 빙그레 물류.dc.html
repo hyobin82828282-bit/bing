@@ -880,7 +880,7 @@ class Component extends DCLogic {
     const k = keyName(s);
     return its.find(x => x.name === s) || its.find(x => [x.code, x.sku, x.barcode].some(c => c && String(c) === s)) || its.find(x => keyName(x.name) === k) || null;
   }
-  linkRet(r) { const it = this.findItem(r.product, r.code); return it ? Object.assign({}, r, { code: it.code, product: r.product || it.name }) : Object.assign({}, r, { code: "" }); }
+  linkRet(r) { const w = this.state.wb[normWb(r.owb)]; if (w && w.name && !str(r.name)) r = Object.assign({}, r, { name: w.name }); const it = this.findItem(r.product, r.code); return it ? Object.assign({}, r, { code: it.code, product: r.product || it.name }) : Object.assign({}, r, { code: "" }); }
   openRet(x) { this.setState({ edit: { kind: "ret", isNew: !x, draft: Object.assign({ date: today(), name: "", owb: "", rwb: "", product: "", code: "", qty: 1, memo: "" }, x || {}) }, editErr: "" }); }
   saveRet() {
     const e = this.state.edit, d = this.linkRet(Object.assign({}, e.draft, { owb: normWb(e.draft.owb), rwb: normWb(e.draft.rwb), qty: num(e.draft.qty) }));
@@ -1091,7 +1091,7 @@ class Component extends DCLogic {
 
     // 반품리스트
     const itemByCode = new Map(s.items.map(x => [x.code, x]));
-    const retAll = s.returns.map(r => { const it = (r.code && itemByCode.get(r.code)) || this.findItem(r.product); return Object.assign({}, r, { _it: it }); });
+    const retAll = s.returns.map(r => { const it = (r.code && itemByCode.get(r.code)) || this.findItem(r.product); const w = !str(r.name) && r.owb ? s.wb[normWb(r.owb)] : null; return Object.assign({}, r, { _it: it }, w && w.name ? { name: w.name } : {}); });
     const unlinkedAll = retAll.filter(r => !r._it).length;
     const rInMonth = retAll.filter(r => !s.retMonth || String(r.date || "").startsWith(s.retMonth));
     const rq = s.retQ.trim().toLowerCase();
@@ -1148,7 +1148,7 @@ class Component extends DCLogic {
       onRetOwb: ev => {
         const v = ev.target.value, w2 = s.wb[normWb(v)], nd = Object.assign({}, s.edit.draft, { owb: v });
         if (w2) {
-          if (!str(nd.name) && w2.name) nd.name = w2.name;
+          if (w2.name) nd.name = w2.name;
           const its = w2.items || [];
           if (!str(nd.product) && its.length === 1) { const it = this.findItem(its[0].product, its[0].code); nd.product = it ? it.name : its[0].product; nd.code = it ? it.code : ""; if (has(its[0].qty)) nd.qty = its[0].qty; }
         }
