@@ -247,8 +247,14 @@ class Component extends DCLogic {
     return out;
   }
 
-  addFiles(files) {
-    const all = [...files];
+  async addFiles(files) {
+    const src = [...files], all = [];
+    let unread = 0;
+    for (const f of src) {
+      try { const buf = await f.arrayBuffer(); all.push(new File([buf], f.name, { type: f.type, lastModified: f.lastModified })); }
+      catch (e) { unread++; }
+    }
+    if (unread) this.showToast('읽을 수 없는 사진 ' + unread + '장 제외 · 사진을 바탕화면 등에 복사한 뒤 다시 올려주세요');
     const ok = f => /^image\/(jpeg|png|webp|gif|bmp)$/.test(f.type) || (!f.type && /\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name));
     const key = f => f.name + '|' + f.size + '|' + f.lastModified;
     const have = new Set(this.state.items.map(i => key(i.file)));
