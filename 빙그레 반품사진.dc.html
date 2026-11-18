@@ -239,7 +239,7 @@ class Component extends DCLogic {
     items.forEach(it => {
       if (!valid(it.num)) { out[it.id] = null; return; }
       const hit = this.db ? this.db[it.num] : null;
-      const who = hit && hit.u ? String(hit.u).trim().replace(/[\\/:*?"<>|]/g, '') : '';
+      const who = hit && hit.u ? String(hit.u).trim().replace(/\*/g, '＊').replace(/[\\/:?"<>|]/g, '') : '';
       const base = (prefix || '빙그레_') + (who ? who + '_' : '') + it.num;
       if (counts[it.num] === 1) out[it.id] = base + ext(it.file.name);
       else { seen[it.num] = (seen[it.num] || 0) + 1; out[it.id] = `${base}(${seen[it.num]})${ext(it.file.name)}`; }
