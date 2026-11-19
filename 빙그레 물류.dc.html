@@ -423,7 +423,7 @@
           <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍦</span>임박재고 알람</h1>
           <div style="margin-top:5px;font-size:12.5px;color:#6B7280">발효유 D-10 · 냉장 우유(단지류) D-8 이하는 불용처리</div>
         </div>
-        <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ expAsof }}</b><br>D-day는 접속 시점 기준 자동 계산</div>
+        <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ expAsof }}</b><br>D-day는 오늘 포함 · 접속 시점 기준 자동 계산</div>
       </header>
       <div style="display:flex;flex-direction:column;gap:20px;padding:24px 32px 40px">
         <section style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
@@ -1227,7 +1227,7 @@ class Component extends DCLogic {
       const rule = RL[r.rule]; if (!rule) return;
       if (/^불용/.test(r.st)) { done.push(r); return; }
       const dd = dLeft(r.exp); if (dd == null) return;
-      const gap = dd - rule.days;
+      const gap = (dd + 1) - rule.days;
       if (gap <= 3) live.push(Object.assign({}, r, { dd, gap, rule }));
     });
     live.sort((a, b) => a.gap - b.gap || a.dd - b.dd || a.name.localeCompare(b.name));
@@ -1253,7 +1253,7 @@ class Component extends DCLogic {
         return {
           name: r.name, tag: r.rule.label, qty: fmt(r.qty), avail: fmt(r.avail),
           tagStyle: "padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;" + (r.rule.key === "ferment" ? "background:#FFEEF4;color:#A8215A" : "background:#FFF4D6;color:#8A5A00"),
-          ddayLabel: r.dd < 0 ? "D+" + (-r.dd) : r.dd === 0 ? "D-day" : "D-" + r.dd, expShort: r.exp.slice(5).replace("-", "/"),
+          ddayLabel: r.dd < 0 ? "경과 " + (-r.dd) + "일" : "D-" + (r.dd + 1), expShort: r.exp.slice(5).replace("-", "/"),
           meta: [hot ? "불용처리 (기준 D-" + r.rule.days + ")" : r.gap + "일 후 불용 (기준 D-" + r.rule.days + ")", r.loc, "소비기한 " + r.exp, r.sku].filter(Boolean).join(" · "),
           rowStyle: "display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:4px 14px;align-items:center;background:#fff;border:1px solid #F3E3D6;border-left:4px solid " + c + ";border-radius:10px;padding:12px 14px",
           ddayStyle: "text-align:center;padding:6px 4px;border-radius:8px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;" + (hot ? "background:#FFE3EC;color:#A8215A" : "background:#FFF1D6;color:#8A5A00")
