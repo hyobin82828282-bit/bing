@@ -195,7 +195,7 @@
               </thead>
               <tbody>
                 <sc-for list="{{ claimRows }}" as="c" hint-placeholder-count="6">
-                  <tr onClick="{{ c.onClick }}" style="cursor:pointer" style-hover="background:#FFF7F1">
+                  <tr onClick="{{ c.onClick }}" style="cursor:pointer;background:{{ c.rowBg }}" style-hover="background:#FFF7F1">
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.recv }}</td>
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;color:#4B5563">{{ c.ship }}</td>
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;font-weight:600">{{ c.wb }}</td>
@@ -1469,7 +1469,7 @@ class Component extends DCLogic {
       claimQ: s.claimQ, onClaimQ: ev => this.setState({ claimQ: ev.target.value }),
       claimKind: s.claimKind, onClaimKind: ev => this.setState({ claimKind: ev.target.value }),
       statusTabs, claimCount: fmt(claims.length) + "건",
-      claimRows: claims.map(c => Object.assign({}, c, {
+      claimRows: (() => { const cnt = {}; claims.forEach(c => { const k = String(c.wb || "").replace(/\D/g, ""); if (k) cnt[k] = (cnt[k] || 0) + 1; }); const shade = {}; let g = 0; claims.forEach(c => { const k = String(c.wb || "").replace(/\D/g, ""); if (k && cnt[k] > 1 && !(k in shade)) shade[k] = g++ % 2 ? "#FCE7EF" : "#FFF1D6"; }); return claims.map(c => { const k = String(c.wb || "").replace(/\D/g, ""); return Object.assign({}, c, { rowBg: shade[k] || "transparent" }); }); })().map(c => Object.assign({}, c, {
         amountLabel: fmt(c.amount), feeLabel: fmt(c.fee), byLabel: byLabel(c),
         stStyle: "height:28px;padding:0 6px;border:1px solid;border-radius:6px;font-size:12px;font-weight:700;outline:none;cursor:pointer;" + (ST_STYLE[c.status] || ""),
         onClick: () => this.openClaim(c), stop: ev => ev.stopPropagation(),
