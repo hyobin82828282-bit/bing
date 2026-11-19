@@ -1023,7 +1023,7 @@ function parseWbRows(rows) {
     if (normH(g("channel")) === "스마트스토어(도착보장)") mall = "도착보장";
     const qty = num(g("qty")), up = num(g("unitPrice"));
     let amount = num(g("amount"));
-    if (amount === "" && up !== "" && up > 0) amount = up * (qty === "" ? 1 : qty);
+    if (amount === "" && up !== "" && up > 0) amount = up;
     const ship = parseDate(g("shipDone")) || parseDate(g("shipDone2")) || parseDate(g("ship"));
     const it = { code: normWb(g("code")), product: str(g("product")), qty, amount };
     const e = list.map(w => out[w]).find(Boolean) || { mall, name: str(g("name")), ship, items: [] };
