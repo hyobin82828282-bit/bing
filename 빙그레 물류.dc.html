@@ -293,7 +293,7 @@
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">재출고송장</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">택배비</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">비고</th>
-                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">택배접수</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">사고접수</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">상태</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">최근 수정</th>
                 </tr>
@@ -708,7 +708,7 @@
         <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">실결제금액<input type="number" value="{{ cdr.amount }}" onChange="{{ cdf.amount }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
         <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">재출고송장<input value="{{ cdr.rewb }}" onChange="{{ cdf.rewb }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
         <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">택배비<input type="number" value="{{ cdr.fee }}" onChange="{{ cdf.fee }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></input></label>
-        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">택배접수<select value="{{ cdr.parcel }}" onChange="{{ cdf.parcel }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"><option value="">-</option><option value="O">O</option><option value="X">X</option></select></label>
+        <label style="min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">사고접수<select value="{{ cdr.parcel }}" onChange="{{ cdf.parcel }}" style="height:36px;padding:0 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"><option value="">-</option><option value="O">O</option><option value="X">X</option></select></label>
         <label style="grid-column:1/-1;min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#374151">비고<textarea value="{{ cdr.memo }}" onChange="{{ cdf.memo }}" style="min-height:60px;padding:9px 11px;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:400;background:#fff;outline:none;box-sizing:border-box;min-width:0;width:100%;resize:vertical" style-focus="border-color:#D63370;box-shadow:0 0 0 3px #FFEEF4"></textarea></label>
         <sc-if value="{{ hasEditErr }}"><div style="grid-column:1/-1;padding:10px 12px;border-radius:8px;background:#FBEAE9;color:#8C1D18;font-size:12.5px">{{ editErr }}</div></sc-if>
       </div>
@@ -987,7 +987,7 @@ const WB_H = { "송장번호": "wb", "운송장번호": "wb", "쇼핑몰명": "m
 const ITEM_ORDER = ["code", "sku", "name", "barcode", "temp", "unit", "type", "use", "price", "memo"];
 const ITEM_LABEL = { code: "상품코드", sku: "업체 품목코드", name: "상품명", barcode: "바코드", temp: "보관온도", unit: "상품단위", type: "상품구분", use: "사용 여부", weight: "제품중량", price: "상품정가", reg: "등록일", memo: "비고" };
 const CLAIM_F = ["recv", "ship", "wb", "mall", "name", "kind", "reason", "code", "product", "qty", "amount", "rewb", "fee", "memo", "parcel", "status"];
-const CLAIM_LABEL = { parcel: "택배접수", recv: "접수일", ship: "출고일", wb: "운송장번호", mall: "쇼핑몰", name: "수취인", kind: "구분", reason: "사유", code: "품목코드", product: "상품명", qty: "수량", amount: "실결제금액", rewb: "재출고송장", fee: "택배비", memo: "비고", status: "처리상태" };
+const CLAIM_LABEL = { parcel: "사고접수", recv: "접수일", ship: "출고일", wb: "운송장번호", mall: "쇼핑몰", name: "수취인", kind: "구분", reason: "사유", code: "품목코드", product: "상품명", qty: "수량", amount: "실결제금액", rewb: "재출고송장", fee: "택배비", memo: "비고", status: "처리상태" };
 
 // 헤더 행이 있으면 헤더로, 없으면 기본 열 순서로 품목 행을 만듦
 function parseItemRows(rows) {
@@ -1544,6 +1544,11 @@ class Component extends DCLogic {
     const cq = s.claimQ.trim().toLowerCase();
     const claims = inMonth.filter(c => (!s.claimKind || c.kind === s.claimKind) && (!s.claimReason || c.reason === s.claimReason) && (!s.claimStatus || c.status === s.claimStatus) && (!cq || [c.wb, c.name, c.product, c.code, c.mall, c.memo, c.reason, c.rewb].some(v => String(v || "").toLowerCase().includes(cq))))
       .sort((a, b) => String(b.recv || "").localeCompare(String(a.recv || "")) || (b._at || 0) - (a._at || 0));
+    // 화면 순서 고정: 한 번 자리 잡은 행은 내용이 바뀌어도 위아래로 움직이지 않음 (새 행만 맨 위)
+    if (!this._ord) { this._ord = new Map(); this._ordTop = 0; this._ordN = 0; }
+    const ord = this._ord, fresh = claims.filter(c => !ord.has(c.id));
+    if (fresh.length) { const first = ord.size === 0; (first ? fresh : fresh.slice().reverse()).forEach(c => ord.set(c.id, first ? this._ordN++ : --this._ordTop)); }
+    claims.sort((a, b) => ord.get(a.id) - ord.get(b.id));
     const cnt = st => inMonth.filter(c => c.status === st).length;
     const openCount = s.claims.filter(c => c.status !== "완료").length;
     const SEG = "height:30px;padding:0 12px;border:0;border-radius:6px;font-size:12.5px;cursor:pointer;";
@@ -1663,7 +1668,7 @@ class Component extends DCLogic {
         onClick: () => this.openClaim(c), stop: ev => ev.stopPropagation(),
         parcel: c.parcel || "",
         parcelStyle: "height:28px;min-width:48px;padding:0 6px;border:1px solid;border-radius:6px;font-size:12px;font-weight:700;outline:none;cursor:pointer;" + (c.parcel === "O" ? "background:#E7F5EC;color:#166534;border-color:#A7D7B8" : c.parcel === "X" ? "background:#FFEEF4;color:#A8215A;border-color:#F7C6D6" : "background:#fff;color:#9CA3AF;border-color:#E5E7EB"),
-        onParcel: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { parcel: v })], [], { action: "택배접수 변경", target: c.wb + " · " + (c.parcel || "-") + " → " + (v || "-") }); },
+        onParcel: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { parcel: v })], [], { action: "사고접수 변경", target: c.wb + " · " + (c.parcel || "-") + " → " + (v || "-") }); },
         onStatus: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { status: v })], [], { action: "상태 변경", target: c.wb + " · " + (c.status || "") + " → " + v }); }
       })),
       noClaims: !claims.length, noClaimsLabel: s.claims.length ? "🍨 조건에 맞는 클레임이 없습니다" : "🍨 등록된 클레임이 없습니다. + 클레임 등록이나 송장 붙여넣기로 시작하세요.",
