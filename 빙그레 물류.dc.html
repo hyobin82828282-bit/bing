@@ -1566,12 +1566,12 @@ class Component extends DCLogic {
     const inMonth = s.claims.filter(c => !s.month || String(c.recv || "").startsWith(s.month));
     const cq = s.claimQ.trim().toLowerCase();
     const claims = inMonth.filter(c => (!s.claimKind || c.kind === s.claimKind) && (!s.claimReason || c.reason === s.claimReason) && (!s.claimStatus || c.status === s.claimStatus) && (!cq || [c.wb, c.name, c.product, c.code, c.mall, c.memo, c.reason, c.rewb].some(v => String(v || "").toLowerCase().includes(cq))))
-      .sort((a, b) => String(b.recv || "").localeCompare(String(a.recv || "")) || (b._at || 0) - (a._at || 0));
-    // 화면 순서 고정: 한 번 자리 잡은 행은 내용이 바뀌어도 위아래로 움직이지 않음 (새 행만 맨 위)
-    if (!this._ord) { this._ord = new Map(); this._ordTop = 0; this._ordN = 0; }
-    const ord = this._ord, fresh = claims.filter(c => !ord.has(c.id));
-    if (fresh.length) { const first = ord.size === 0; (first ? fresh : fresh.slice().reverse()).forEach(c => ord.set(c.id, first ? this._ordN++ : --this._ordTop)); }
-    claims.sort((a, b) => ord.get(a.id) - ord.get(b.id));
+;
+    // 화면 순서 고정: 등록 시각(id에 들어 있어 수정해도 안 바뀜) 기준. 같은 송장은 한데 모으고, 새로 등록한 송장 묶음이 맨 위
+    const born = c => { const t = parseInt(String(c.id || "").slice(0, -5), 36); return isFinite(t) && t > 1e12 ? t : 0; };
+    const gk = c => normWb(c.wb) || ("#" + c.id), grp = {};
+    claims.forEach(c => { const k = gk(c), t = born(c); if (!(k in grp) || t > grp[k]) grp[k] = t; });
+    claims.sort((a, b) => { const ka = gk(a), kb = gk(b); return (grp[kb] - grp[ka]) || ka.localeCompare(kb) || (born(a) - born(b)) || String(a.id).localeCompare(String(b.id)); });
     const cnt = st => inMonth.filter(c => c.status === st).length;
     const openCount = s.claims.filter(c => c.status !== "완료").length;
     const SEG = "height:30px;padding:0 12px;border:0;border-radius:6px;font-size:12.5px;cursor:pointer;";
