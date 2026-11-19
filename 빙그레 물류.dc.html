@@ -44,6 +44,10 @@
       <div onClick="{{ goRet }}" style="{{ navRet }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍫</span>반품리스트
         <sc-if value="{{ hasRetUnlinked }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700">{{ retUnlinkedCount }}</span></sc-if>
       </div>
+      <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">재고</div>
+      <div onClick="{{ goExp }}" style="{{ navExp }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍦</span>임박재고 알람
+        <sc-if value="{{ hasExpBadge }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#D63370;color:#fff;font-size:11px;font-weight:700">{{ expBadge }}</span></sc-if>
+      </div>
       <div onClick="{{ goStock }}" style="{{ navStock }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🧊</span>월말 재고실사</div>
       <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기록</div>
       <div onClick="{{ goLog }}" style="{{ navLog }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🥛</span>변경 이력</div>
@@ -297,6 +301,104 @@
     <sc-if value="{{ keepPhoto }}" hint-placeholder-val="{{ false }}">
       <div style="display:{{ dispPhoto }};flex:1;flex-direction:column;min-height:0">
         <iframe src="빙그레 반품사진.dc.html" style="flex:1;width:100%;min-height:100vh;border:0;background:#FFF8F0"></iframe>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isExp }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">재고</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍦</span>임박재고 알람</h1>
+          <div style="margin-top:5px;font-size:12.5px;color:#6B7280">발효유 D-10 · 냉장 우유(단지류) D-8 이하는 불용처리</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ expAsof }}</b><br>D-day는 접속 시점 기준 자동 계산</div>
+      </header>
+      <div style="display:flex;flex-direction:column;gap:20px;padding:24px 32px 40px">
+        <section style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
+          <div style="flex:1 1 300px;min-width:0">
+            <div style="font-size:13.5px;font-weight:700">로케이션재고 파일 올리기</div>
+            <div style="margin-top:4px;font-size:12px;color:#6B7280">새 파일을 올리면 이전 내용은 교체됩니다. 재고상태가 가용인 발효유 · 냉장 우유만 D-day를 계산합니다.</div>
+            <div style="margin-top:6px;font-size:12px;color:#D63370;font-weight:600">{{ expStatus }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px">
+            <label style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:9px;background:#D63370;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#A8215A">
+              파일 선택
+              <input type="file" accept=".xlsx,.xls" onChange="{{ onExpFile }}" style="display:none"></input>
+            </label>
+            <sc-if value="{{ hasExpData }}">
+              <button onClick="{{ downloadExpFile }}" style="height:40px;padding:0 14px;border:1px solid #F7C6D6;border-radius:9px;background:#fff;color:#A8215A;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#D63370;background:#FFF0F5">원본 다운로드</button>
+              <button onClick="{{ clearExp }}" style="height:40px;padding:0 14px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;color:#4B5563;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">데이터 삭제</button>
+            </sc-if>
+          </div>
+        </section>
+
+        <sc-if value="{{ hasExpData }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+            <sc-for list="{{ expTiles }}" as="t" hint-placeholder-count="4">
+              <div style="{{ t.style }}">
+                <div style="{{ t.numStyle }}">{{ t.n }}</div>
+                <div style="margin-top:6px;font-size:12px;color:#6B7280;font-weight:600">{{ t.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#6B7280">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#D63370"></span>불용처리 · 발효유 D-10 이하 / 냉장 우유 D-8 이하</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#C9821B"></span>주의 · 불용 기준까지 3일 이내</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ expEmpty }}">
+          <div style="background:#fff;border:2px dashed #F7C6D6;border-radius:14px;padding:52px 20px;text-align:center;font-size:13px;color:#8B93A1">{{ expEmptyLabel }}</div>
+        </sc-if>
+        <sc-if value="{{ hasExpRows }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ expRows }}" as="r" hint-placeholder-count="6">
+              <div style="{{ r.rowStyle }}">
+                <div style="{{ r.ddayStyle }}">{{ r.ddayLabel }}<div style="margin-top:2px;font-size:10.5px;font-weight:500">{{ r.expShort }}</div></div>
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                    <span style="font-size:13.5px;font-weight:600">{{ r.name }}</span>
+                  </div>
+                  <div style="margin-top:3px;font-size:11.5px;color:#6B7280;font-variant-numeric:tabular-nums">{{ r.meta }}</div>
+                </div>
+                <div style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">
+                  <div><span style="font-size:15px;font-weight:700">{{ r.qty }}</span> <span style="font-size:11px;color:#6B7280">ea</span></div>
+                  <div style="margin-top:2px;font-size:11.5px;color:#6B7280">가용 {{ r.avail }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasExpData }}">
+          <div style="margin-top:10px">
+            <h2 style="margin:0;font-size:15px;font-weight:700;letter-spacing:-0.2px">이미 불용 처리된 재고</h2>
+            <p style="margin:5px 0 14px;font-size:12.5px;color:#6B7280">파일의 재고상태가 불용인 줄 · 알람에서는 빠지고 참고용으로만 표시</p>
+            <sc-if value="{{ hasExpDone }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ expDone }}" as="a" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:4px 14px;align-items:center;background:#fff;border:1px solid #F3E3D6;border-left:4px solid #B9A7B0;border-radius:10px;padding:12px 14px">
+                    <div style="text-align:center;padding:6px 4px;border-radius:8px;background:#F5EEF1;color:#6B5560;font-size:12px;font-weight:700">{{ a.reason }}</div>
+                    <div style="min-width:0">
+                      <div style="font-size:13.5px;font-weight:600">{{ a.name }}</div>
+                      <div style="margin-top:3px;font-size:11.5px;color:#6B7280;font-variant-numeric:tabular-nums">{{ a.meta }}</div>
+                    </div>
+                    <div style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap"><span style="font-size:15px;font-weight:700">{{ a.qty }}</span> <span style="font-size:11px;color:#6B7280">ea</span></div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noExpDone }}">
+              <div style="background:#fff;border:2px dashed #F7C6D6;border-radius:10px;padding:26px 20px;text-align:center;font-size:12.5px;color:#8B93A1">불용 처리된 재고가 없습니다</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <div style="font-size:11.5px;color:#8B93A1;line-height:1.7">
+          발효유: 요플레 · 바이오플레 · Only · 짜먹는키즈 등 / 냉장 우유(단지류): 바나나맛우유 · 딸기맛우유 · 바나나라이트 · 바나나무가당 등. 치즈 · 주스 · 커피 · 굿즈는 대상이 아닙니다.<br>
+          재고수량 · 가용수량은 올린 파일의 스냅샷이며, D-day만 접속 시점 기준으로 계산됩니다.
+        </div>
       </div>
     </sc-if>
 
@@ -667,6 +769,33 @@ const NAV = "display:flex;align-items:center;gap:10px;padding:9px 10px;border-ra
 const NAV_ON = NAV + "background:#FFE3EC;color:#A8215A;font-weight:700";
 const NAV_OFF = NAV + "color:#374151";
 const pad = n => String(n).padStart(2, "0");
+const EXP_KEY = "bg_exp_v1";
+const EXP_RULES = [
+  { key: "ferment", label: "발효유", days: 10, re: /요플레|바이오플레|only\s*\d|짜먹는|요구르트|요거트|그릭|드링킹/i },
+  { key: "milk", label: "냉장 우유", days: 8, re: /맛우유|바나나라이트|바나나무가당|단지/ }
+];
+const expRule = name => { const n = String(name || ""); if (!/냉장/.test(n) || /굿즈/.test(n)) return null; return EXP_RULES.find(r => r.re.test(n)) || null; };
+const expDate = v => {
+  if (typeof v === "number" && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 86400000)); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); }
+  const m = String(v == null ? "" : v).match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  return m ? m[1] + "-" + m[2].padStart(2, "0") + "-" + m[3].padStart(2, "0") : "";
+};
+const dLeft = ymd => { if (!ymd) return null; const [y, m, d] = ymd.split("-").map(Number), t = new Date(); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000); };
+const expNum = v => { const x = Number(String(v == null ? "" : v).replace(/,/g, "")); return Number.isFinite(x) ? x : 0; };
+function parseExpRows(rows) {
+  let hr = -1;
+  for (let i = 0; i < Math.min(rows.length, 20); i++) { const r = rows[i].map(c => String(c).trim()); if (r.includes("상품명") && r.includes("소비기한")) { hr = i; break; } }
+  if (hr < 0) return null;
+  const H = rows[hr].map(c => String(c).trim()), ci = k => H.indexOf(k);
+  const C = { code: ci("상품코드"), sku: ci("업체 품목코드") >= 0 ? ci("업체 품목코드") : ci("업체품목코드"), name: ci("상품명"), mfg: ci("제조일자"), st: ci("재고상태"), loc: ci("로케이션"), exp: ci("소비기한"), qty: ci("재고수량"), avail: ci("가용수량") };
+  const out = [];
+  rows.slice(hr + 1).forEach(r => {
+    const name = String(r[C.name] || "").trim(); if (!name) return;
+    const rule = expRule(name); if (!rule) return;
+    out.push({ code: String(r[C.code] || ""), sku: C.sku >= 0 ? String(r[C.sku] || "") : "", name, rule: rule.key, mfg: C.mfg >= 0 ? expDate(r[C.mfg]) : "", st: String(r[C.st] || "").trim(), loc: C.loc >= 0 ? String(r[C.loc] || "") : "", exp: expDate(r[C.exp]), qty: expNum(r[C.qty]), avail: expNum(r[C.avail]) });
+  });
+  return out;
+}
 const today = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
 const normWb = v => String(v == null ? "" : v).replace(/[\s\-]/g, "").replace(/\.0+$/, "");
 const splitWbs = raw => String(raw == null ? "" : raw).split(/[,，]/).map(normWb).filter(Boolean);
@@ -752,6 +881,7 @@ function parseWbRows(rows) {
 
 class Component extends DCLogic {
   state = {
+    expData: (() => { try { return JSON.parse(localStorage.getItem(EXP_KEY) || "null"); } catch (e) { return null; } })(),
     tab: this.props.defaultTab === "품목현황" ? "items" : "claims",
     openTabs: [this.props.defaultTab === "품목현황" ? "items" : "claims"], retExportOpen: false,
     items: load(K.items, []), claims: load(K.claims, []), wb: load(K.wb, {}), log: load(K.log, []), returns: load(K.returns, []), retQ: "", retMonth: today().slice(0, 7), retLink: "",
@@ -855,6 +985,79 @@ class Component extends DCLogic {
     if (S) { upserts.forEach(x => S.put(coll, x)); dels.forEach(id => S.del(coll, id)); if (lg) S.put("log", lg); }
   }
 
+  async onExpFile(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try {
+      const wbk = await this.readBook(f, "");
+      const rows = parseExpRows(this.sheetRows(wbk, wbk.SheetNames[0]));
+      if (!rows) return this.toast("상품명 · 소비기한 열을 찾지 못했습니다. 로케이션재고 파일인지 확인하세요");
+      const d = new Date();
+      const data = { file: f.name, at: today() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()), rows };
+      try { localStorage.setItem(EXP_KEY, JSON.stringify(data)); } catch (er) {}
+      try {
+        const url = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(f); });
+        localStorage.setItem(EXP_KEY + "_file", JSON.stringify({ name: f.name, url }));
+      } catch (er) { this.toast("원본 파일이 커서 이 컴퓨터에 보관하지 못했습니다 (알람은 정상 표시)"); }
+      this.setState({ expData: data });
+      this.toast("임박재고 대상 품목 " + rows.length + "줄을 불러왔습니다");
+    } catch (er) { this.toast(er.message || "파일을 읽지 못했습니다"); }
+  }
+  clearExp() {
+    if (!window.confirm("올린 임박재고 데이터를 삭제할까요?")) return;
+    try { localStorage.removeItem(EXP_KEY); localStorage.removeItem(EXP_KEY + "_file"); } catch (e) {}
+    this.setState({ expData: null });
+  }
+  downloadExpFile() {
+    let o = null; try { o = JSON.parse(localStorage.getItem(EXP_KEY + "_file") || "null"); } catch (e) {}
+    if (!o || !o.url) return this.toast("보관된 원본 파일이 없습니다. 파일을 다시 올려주세요");
+    const a = document.createElement("a"); a.href = o.url; a.download = o.name || "로케이션재고.xlsx";
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  expVals() {
+    const ed = this.state.expData, rows = (ed && ed.rows) || [];
+    const RL = {}; EXP_RULES.forEach(r => { RL[r.key] = r; });
+    const live = [], done = [];
+    rows.forEach(r => {
+      const rule = RL[r.rule]; if (!rule) return;
+      if (/^불용/.test(r.st)) { done.push(r); return; }
+      const dd = dLeft(r.exp); if (dd == null) return;
+      const gap = dd - rule.days;
+      if (gap <= 3) live.push(Object.assign({}, r, { dd, gap, rule }));
+    });
+    live.sort((a, b) => a.gap - b.gap || a.dd - b.dd || a.name.localeCompare(b.name));
+    const dispose = live.filter(r => r.gap <= 0), watch = live.filter(r => r.gap > 0);
+    const sumQ = l => l.reduce((s, r) => s + r.avail, 0);
+    const tile = (n, label, c, bg) => ({ n, label, style: "background:" + bg + ";border:1px solid #F3E3D6;border-radius:14px;padding:16px 18px", numStyle: "font-size:26px;font-weight:800;letter-spacing:-0.5px;font-variant-numeric:tabular-nums;color:" + c });
+    return {
+      isExp: this.state.tab === "exp", navExp: this.state.tab === "exp" ? NAV_ON : NAV_OFF, goExp: () => this.goTab("exp"),
+      hasExpBadge: dispose.length > 0, expBadge: dispose.length,
+      expAsof: ed ? ed.at : "-", hasExpData: !!ed,
+      expStatus: ed ? ed.file + " · 대상 " + rows.length + "줄 · 업로드 " + ed.at : "올린 파일이 없습니다.",
+      onExpFile: ev => this.onExpFile(ev), clearExp: () => this.clearExp(), downloadExpFile: () => this.downloadExpFile(),
+      expTiles: [
+        tile(dispose.length, "불용처리 대상 (" + fmt(sumQ(dispose)) + " ea)", "#D63370", "#FFF0F5"),
+        tile(watch.length, "주의 · 3일 이내 불용", "#B0700F", "#FFF7E8"),
+        tile(live.filter(r => r.rule.key === "ferment").length, "발효유 (D-10 기준)", "#1F2937", "#fff"),
+        tile(live.filter(r => r.rule.key === "milk").length, "냉장 우유 (D-8 기준)", "#1F2937", "#fff")
+      ],
+      expEmpty: !live.length, hasExpRows: live.length > 0,
+      expEmptyLabel: ed ? "🍦 불용처리 대상이나 3일 이내 임박 품목이 없습니다" : "🍦 로케이션재고 파일을 올리면 발효유 · 냉장 우유 임박 품목이 표시됩니다",
+      expRows: live.map(r => {
+        const hot = r.gap <= 0, c = hot ? "#D63370" : "#B0700F";
+        return {
+          name: r.name, tag: r.rule.label, qty: fmt(r.qty), avail: fmt(r.avail),
+          tagStyle: "padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;" + (r.rule.key === "ferment" ? "background:#FFEEF4;color:#A8215A" : "background:#FFF4D6;color:#8A5A00"),
+          ddayLabel: r.dd < 0 ? "D+" + (-r.dd) : r.dd === 0 ? "D-day" : "D-" + r.dd, expShort: r.exp.slice(5).replace("-", "/"),
+          meta: [hot ? "불용처리 (기준 D-" + r.rule.days + ")" : r.gap + "일 후 불용 (기준 D-" + r.rule.days + ")", r.loc, "소비기한 " + r.exp, r.sku].filter(Boolean).join(" · "),
+          rowStyle: "display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:4px 14px;align-items:center;background:#fff;border:1px solid #F3E3D6;border-left:4px solid " + c + ";border-radius:10px;padding:12px 14px",
+          ddayStyle: "text-align:center;padding:6px 4px;border-radius:8px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;" + (hot ? "background:#FFE3EC;color:#A8215A" : "background:#FFF1D6;color:#8A5A00")
+        };
+      }),
+      hasExpDone: done.length > 0, noExpDone: !done.length,
+      expDone: done.map(r => ({ reason: (r.st.match(/\((.*)\)/) || [])[1] || r.st, name: r.name, qty: fmt(r.qty), meta: [RL[r.rule].label, r.loc, "소비기한 " + r.exp].filter(Boolean).join(" · ") }))
+    };
+  }
   readBook(file, pw) {
     return file.arrayBuffer().then(async buf => {
       if (typeof XLSX === "undefined") throw new Error("엑셀 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도하세요");
@@ -1113,7 +1316,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, limit = Number(this.props.rowLimit) || 300;
     const go = t => () => this.goTab(t);
-    const TAB_LBL = { items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", stock: "월말 재고실사", log: "변경 이력" };
+    const TAB_LBL = { items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", exp: "임박재고 알람", stock: "월말 재고실사", log: "변경 이력" };
     const tBase = s.openTabs || [];
     const tOpen = tBase.includes(s.tab) ? tBase : [...tBase, s.tab];
     const TBS = "display:flex;align-items:center;gap:6px;max-width:200px;height:44px;padding:0 6px 0 10px;font-size:13px;white-space:nowrap;cursor:pointer;box-sizing:border-box;margin-bottom:-1px;";
@@ -1173,7 +1376,7 @@ class Component extends DCLogic {
     // 붙여넣기
     const p = s.paste, parsed = p ? this.pasteParse() : [];
 
-    return Object.assign(this.syncVals(), {
+    return Object.assign(this.syncVals(), this.expVals(), {
       isItems: s.tab === "items", isClaims: s.tab === "claims", isWb: s.tab === "wb", isLog: s.tab === "log", isRet: s.tab === "ret",
       navRet: s.tab === "ret" ? NAV_ON : NAV_OFF, goRet: go("ret"),
       hasRetUnlinked: unlinkedAll > 0, retUnlinkedCount: unlinkedAll,
