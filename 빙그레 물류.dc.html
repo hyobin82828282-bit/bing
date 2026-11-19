@@ -358,7 +358,10 @@
           <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);overflow:hidden">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid #EEF0F3">
               <div style="font-size:13px;font-weight:700">보관 관리</div>
-              <div style="font-size:12.5px;color:#4B5563">{{ wbStoreLabel }}</div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="font-size:12.5px;color:#4B5563">{{ wbStoreLabel }}</div>
+                <button onClick="{{ syncAmounts }}" style="height:30px;padding:0 12px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;font:inherit;font-size:12px;font-weight:600;color:#374151;cursor:pointer" style-hover="background:#F9FAFB">클레임 실결제금액 다시 맞추기</button>
+              </div>
             </div>
             <div style="padding:10px 16px;font-size:12px;color:#6B7280;line-height:1.6;border-bottom:1px solid #F3F4F6">{{ wbKeepLabel }}</div>
             <sc-for list="{{ wbMonths }}" as="m" hint-placeholder-count="2">
@@ -1308,7 +1311,8 @@ class Component extends DCLogic {
       const ids = map ? Object.keys(map) : [];
       if (!ids.length) { this.setState({ wbBusy: false }); return this.toast("송장번호 데이터를 찾지 못했습니다. 헤더(송장번호)를 확인하세요"); }
       this.commit("wb", ids.map(id => Object.assign({ id }, map[id])), [], { action: "통합내역 업로드", target: f.name + " · 송장 " + ids.length + "건" });
-      const linked = this.state.claims.map(c => this.fillFromWb(c, map[c.wb], false)).filter(Boolean);
+      const amt = {}; this.amountsFromWb(map).forEach(c => { amt[c.id] = c.amount; });
+      const linked = this.state.claims.map(c => { const b = c.id in amt ? Object.assign({}, c, { amount: amt[c.id] }) : c; return this.fillFromWb(b, map[c.wb], false) || (b !== c ? b : null); }).filter(Boolean);
       if (linked.length) this.commit("claims", linked, [], { action: "클레임 자동 채움", target: linked.length + "건 (통합내역 연동)" });
       this.setState({ wbBusy: false });
       const before = Object.keys(this.state.wb).length;
@@ -1317,6 +1321,25 @@ class Component extends DCLogic {
       if (pruned) this.toast("송장 " + ids.length + "건 저장 · 보관 기간 지난 " + pruned + "건 정리");
       else this.toast("송장 " + ids.length + "건 저장" + (linked.length ? " · 클레임 " + linked.length + "건 빈 칸 채움" : ""));
     } catch (err) { this.setState({ wbBusy: false }); this.toast("파일을 읽지 못했습니다: " + err.message); }
+  }
+
+  // 클레임 실결제금액을 통합내역 금액으로 덮어씀. 바뀐 클레임 목록 반환
+  amountsFromWb(map) {
+    return this.state.claims.map(c => {
+      const w = map[normWb(c.wb)], its = (w && w.items) || [];
+      if (!its.length) return null;
+      let v;
+      if (/ 외 \d+개$/.test(c.product || "")) v = its.reduce((a, x) => a + (Number(x.amount) || 0), 0);
+      else { const it = its.find(x => (c.code && x.code === c.code) || (c.product && x.product === c.product)) || (its.length === 1 ? its[0] : null); v = it ? it.amount : ""; }
+      if (v === "" || v == null || Number(v) === Number(c.amount)) return null;
+      return Object.assign({}, c, { amount: Number(v) });
+    }).filter(Boolean);
+  }
+  syncClaimAmounts() {
+    const ups = this.amountsFromWb(this.state.wb);
+    if (!ups.length) return this.toast("바꿀 실결제금액이 없습니다");
+    this.commit("claims", ups, [], { action: "실결제금액 통합내역 기준 변경", target: ups.length + "건" });
+    this.toast("클레임 " + ups.length + "건 실결제금액 변경");
   }
 
   // 통합내역 값으로 빈 칸만 채움. 바뀐 게 없으면 null
@@ -1688,6 +1711,7 @@ class Component extends DCLogic {
         return {
           wbMonths: Object.keys(by).sort().reverse().map(m => ({ month: m, countLabel: fmt(by[m].n) + "건", linkLabel: by[m].link ? "클레임 " + by[m].link + "건 보관" : "", sizeLabel: "약 " + kb(by[m].bytes), old: m !== "날짜 없음" && m < cut, canDel: m !== "날짜 없음", onDel: () => this.delWbMonth(m) })),
           hasWbMonths: wbIds.length > 0,
+          syncAmounts: () => this.syncClaimAmounts(),
           wbStoreLabel: "전체 " + fmt(wbIds.length) + "건 · 약 " + kb(total),
           wbKeepLabel: "출고일 기준 " + this.retention() + "개월(" + cut + " 이전)이 지난 송장은 자동 정리됩니다. 클레임에 연결된 송장은 기간과 상관없이 남습니다."
         };
