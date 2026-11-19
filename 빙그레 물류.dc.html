@@ -189,6 +189,7 @@
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">재출고송장</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:right">택배비</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">비고</th>
+                  <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">택배접수</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB;text-align:center">상태</th>
                   <th style="padding:11px 12px;font-weight:600;border-bottom:1px solid #E5E7EB">최근 수정</th>
                 </tr>
@@ -210,6 +211,13 @@
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6">{{ c.rewb }}</td>
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;text-align:right">{{ c.feeLabel }}</td>
                     <td style="padding:10px 12px;border-bottom:1px solid #F3F4F6;white-space:normal;min-width:140px;color:#4B5563">{{ c.memo }}</td>
+                    <td style="padding:8px 12px;border-bottom:1px solid #F3F4F6;text-align:center">
+                      <select value="{{ c.parcel }}" onClick="{{ c.stop }}" onChange="{{ c.onParcel }}" style="{{ c.parcelStyle }}">
+                        <option value="">-</option>
+                        <option value="O">O</option>
+                        <option value="X">X</option>
+                      </select>
+                    </td>
                     <td style="padding:8px 12px;border-bottom:1px solid #F3F4F6;text-align:center">
                       <select value="{{ c.status }}" onClick="{{ c.stop }}" onChange="{{ c.onStatus }}" style="{{ c.stStyle }}">
                         <sc-for list="{{ statuses }}" as="o" hint-placeholder-count="0"><option value="{{ o }}">{{ o }}</option></sc-for>
@@ -822,8 +830,8 @@ const WB_H = { "송장번호": "wb", "운송장번호": "wb", "쇼핑몰명": "m
   "송장/박스번호": "wb", "판매채널명": "mall", "판매점": "shop", "출고완료일": "shipDone", "출고확정일": "shipDone2", "상품코드": "code", "주문수량": "qty", "판매단가": "unitPrice", "쇼핑몰주문번호": "orderNo" };
 const ITEM_ORDER = ["code", "sku", "name", "barcode", "temp", "unit", "type", "use", "price", "memo"];
 const ITEM_LABEL = { code: "상품코드", sku: "업체 품목코드", name: "상품명", barcode: "바코드", temp: "보관온도", unit: "상품단위", type: "상품구분", use: "사용 여부", weight: "제품중량", price: "상품정가", reg: "등록일", memo: "비고" };
-const CLAIM_F = ["recv", "ship", "wb", "mall", "name", "kind", "reason", "code", "product", "qty", "amount", "rewb", "fee", "memo", "status"];
-const CLAIM_LABEL = { recv: "접수일", ship: "출고일", wb: "운송장번호", mall: "쇼핑몰", name: "수취인", kind: "구분", reason: "사유", code: "품목코드", product: "상품명", qty: "수량", amount: "실결제금액", rewb: "재출고송장", fee: "택배비", memo: "비고", status: "처리상태" };
+const CLAIM_F = ["recv", "ship", "wb", "mall", "name", "kind", "reason", "code", "product", "qty", "amount", "rewb", "fee", "memo", "parcel", "status"];
+const CLAIM_LABEL = { parcel: "택배접수", recv: "접수일", ship: "출고일", wb: "운송장번호", mall: "쇼핑몰", name: "수취인", kind: "구분", reason: "사유", code: "품목코드", product: "상품명", qty: "수량", amount: "실결제금액", rewb: "재출고송장", fee: "택배비", memo: "비고", status: "처리상태" };
 
 // 헤더 행이 있으면 헤더로, 없으면 기본 열 순서로 품목 행을 만듦
 function parseItemRows(rows) {
@@ -1473,6 +1481,9 @@ class Component extends DCLogic {
         amountLabel: fmt(c.amount), feeLabel: fmt(c.fee), byLabel: byLabel(c),
         stStyle: "height:28px;padding:0 6px;border:1px solid;border-radius:6px;font-size:12px;font-weight:700;outline:none;cursor:pointer;" + (ST_STYLE[c.status] || ""),
         onClick: () => this.openClaim(c), stop: ev => ev.stopPropagation(),
+        parcel: c.parcel || "",
+        parcelStyle: "height:28px;min-width:48px;padding:0 6px;border:1px solid;border-radius:6px;font-size:12px;font-weight:700;outline:none;cursor:pointer;" + (c.parcel === "O" ? "background:#E7F5EC;color:#166534;border-color:#A7D7B8" : c.parcel === "X" ? "background:#FFEEF4;color:#A8215A;border-color:#F7C6D6" : "background:#fff;color:#9CA3AF;border-color:#E5E7EB"),
+        onParcel: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { parcel: v })], [], { action: "택배접수 변경", target: c.wb + " · " + (c.parcel || "-") + " → " + (v || "-") }); },
         onStatus: ev => { const v = ev.target.value; this.commit("claims", [Object.assign({}, c, { status: v })], [], { action: "상태 변경", target: c.wb + " · " + (c.status || "") + " → " + v }); }
       })),
       noClaims: !claims.length, noClaimsLabel: s.claims.length ? "🍨 조건에 맞는 클레임이 없습니다" : "🍨 등록된 클레임이 없습니다. + 클레임 등록이나 송장 붙여넣기로 시작하세요.",
