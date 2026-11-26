@@ -938,7 +938,7 @@ const NAV_OFF = NAV + "color:#374151";
 const pad = n => String(n).padStart(2, "0");
 const EXP_KEY = "bg_exp_v1";
 const EXP_RULES = [
-  { key: "ferment", label: "발효유", days: 10, re: /요플레|바이오플레|only\s*\d|짜먹는|요구르트|요거트|그릭|드링킹/i },
+  { key: "ferment", label: "발효유", days: 10, re: /^\s*따옴|요플레|바이오플레|only\s*\d|짜먹는|요구르트|요거트|그릭|드링킹/i },
   { key: "milk", label: "냉장 우유", days: 8, re: /맛우유|바나나라이트|바나나무가당|단지/ }
 ];
 const expRule = name => { const n = String(name || ""); if (!/냉장/.test(n) || /굿즈/.test(n)) return null; return EXP_RULES.find(r => r.re.test(n)) || null; };
