@@ -441,6 +441,7 @@
               <input type="file" accept=".xlsx,.xls" onChange="{{ onExpFile }}" style="display:none"></input>
             </label>
             <sc-if value="{{ hasExpData }}">
+              <button onClick="{{ exportExp }}" style="height:40px;padding:0 14px;border:1px solid #D63370;border-radius:9px;background:#fff;color:#D63370;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#FFF0F5">임박재고 엑셀</button>
               <button onClick="{{ downloadExpFile }}" style="height:40px;padding:0 14px;border:1px solid #F7C6D6;border-radius:9px;background:#fff;color:#A8215A;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#D63370;background:#FFF0F5">원본 다운로드</button>
               <button onClick="{{ clearExp }}" style="height:40px;padding:0 14px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;color:#4B5563;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">데이터 삭제</button>
             </sc-if>
@@ -1243,6 +1244,41 @@ class Component extends DCLogic {
       expAsof: ed ? ed.at : "-", hasExpData: !!ed,
       expStatus: ed ? ed.file + " · 대상 " + rows.length + "줄 · 업로드 " + ed.at : "올린 파일이 없습니다.",
       onExpFile: ev => this.onExpFile(ev), clearExp: () => this.clearExp(), downloadExpFile: () => this.downloadExpFile(),
+      exportExp: () => {
+        if (!live.length) return this.toast("내보낼 임박재고가 없습니다");
+        if (typeof ExcelJS === "undefined") return this.toast("엑셀 모듈을 불러오지 못했습니다");
+        const wbk = new ExcelJS.Workbook(), ws = wbk.addWorksheet("임박재고", { views: [{ showGridLines: false }] });
+        const F = { name: "맑은 고딕", size: 11 }, B = { style: "thin", color: { argb: "FF000000" } }, BD = { top: B, left: B, bottom: B, right: B };
+        [11.25, 16, 10, 40, 11.25, 10].forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+        const t = new Date(), t2 = new Date(t.getTime() + 864e5);
+        ws.getCell("A1").value = String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0") + "일 기준";
+        ws.getCell("A1").font = Object.assign({}, F, { bold: true, size: 14 });
+        ws.getRow(1).height = 20.25; ws.getRow(2).height = 12.75;
+        const hr = ws.getRow(3);
+        ["상태", "소비기한", "상품코드", "상품명", "로케이션", "가용수량"].forEach((h, i) => {
+          const c = hr.getCell(i + 1); c.value = h; c.font = Object.assign({ bold: true }, F); c.border = BD; c.alignment = { horizontal: "center" };
+          c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+        });
+        const SH = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFDE9D9" } };
+        live.forEach((r, k) => {
+          const row = ws.getRow(4 + k), shade = r.gap <= 1;
+          [r.gap <= 0 ? "불용처리" : r.gap + "일 후 불용", r.exp, String(r.sku || ""), r.name, r.loc || "", r.avail].forEach((v, i) => {
+            const c = row.getCell(i + 1); c.value = v; c.font = F; c.border = BD; c.alignment = { horizontal: "center" };
+            if (shade && (i === 0 || i === 2 || i === 3)) c.fill = SH;
+          });
+        });
+        const nr = 4 + live.length + 2;
+        const t3 = new Date(t.getTime() + 2 * 864e5);
+        ws.getCell("A" + nr).value = "(1) 1일 후 불용 : " + t.getDate() + "일까지 출고 가능 " + t2.getDate() + "일 00:00시에 불용처리";
+        ws.getCell("A" + (nr + 1)).value = "(2) 2일 후 불용 : " + t2.getDate() + "일까지 출고 가능 " + t3.getDate() + "일 00:00시에 불용처리";
+        [nr, nr + 1].forEach(n => { const c = ws.getCell("A" + n); c.font = Object.assign({ bold: true }, F); c.alignment = { horizontal: "left" }; });
+        wbk.xlsx.writeBuffer().then(buf => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+          a.download = "빙그레_임박재고_" + today() + ".xlsx"; a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        });
+      },
       expTiles: [
         tile(dispose.length, "불용처리 대상 (" + fmt(sumQ(dispose)) + " ea)", "#D63370", "#FFF0F5"),
         tile(watch.length, "주의 · 3일 이내 불용", "#B0700F", "#FFF7E8"),
