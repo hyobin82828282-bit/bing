@@ -50,6 +50,8 @@
         <sc-if value="{{ hasExpBadge }}"><span style="margin-left:auto;padding:1px 7px;border-radius:999px;background:#D63370;color:#fff;font-size:11px;font-weight:700">{{ expBadge }}</span></sc-if>
       </div>
       <div onClick="{{ goStock }}" style="{{ navStock }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🧊</span>월말 재고실사</div>
+      <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">마감</div>
+      <div onClick="{{ goClose }}" style="{{ navClose }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍪</span>작업료 집계</div>
       <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기록</div>
       <div onClick="{{ goLog }}" style="{{ navLog }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🥛</span>변경 이력</div>
     </div>
@@ -518,6 +520,143 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ isClose }}" hint-placeholder-val="{{ false }}">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
+        <div>
+          <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">마감</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍪</span>일반 작업료 집계</h1>
+          <div style="margin-top:5px;font-size:12.5px;color:#6B7280">택배 출고내역서(통합관리 엑셀)를 넣으면 단포 · 동종 합포 · 이종 합포를 송장별로 나눠 집계합니다</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ closeAsof }}</b><br>올린 결과와 단가는 같이 쓰는 모두에게 실시간 공유</div>
+      </header>
+      <div style="display:flex;flex-direction:column;gap:20px;padding:24px 32px 40px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+          <section style="display:flex;flex-direction:column;justify-content:center;gap:12px;background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
+            <div>
+              <div style="font-size:13.5px;font-weight:700">출고내역서 파일 올리기</div>
+              <div style="margin-top:4px;font-size:12px;color:#6B7280">포장지시일 기준으로 월이 정해지고, 같은 월을 다시 올리면 교체됩니다.</div>
+              <div style="margin-top:6px;font-size:12px;color:#D63370;font-weight:600">{{ closeStatus }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <label style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:9px;background:#D63370;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#A8215A">
+                {{ closeFileLabel }}
+                <input type="file" accept=".xlsx,.xls,.xlsm" onChange="{{ onCloseFile }}" style="display:none"></input>
+              </label>
+              <sc-if value="{{ hasCloseData }}">
+                <button onClick="{{ downloadClose }}" style="height:40px;padding:0 14px;border:1px solid #D63370;border-radius:9px;background:#fff;color:#D63370;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#FFF0F5">집계 엑셀 다운로드</button>
+                <button onClick="{{ clearClose }}" style="height:40px;padding:0 14px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;color:#4B5563;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#D63370;color:#D63370">이 달 삭제</button>
+              </sc-if>
+            </div>
+          </section>
+          <section style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
+            <div style="font-size:13.5px;font-weight:700">단가 <span style="font-weight:500;color:#6B7280;font-size:12px">vat 별도</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+              <label style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13.5px">단포<input type="number" min="0" step="10" value="{{ cp0 }}" onChange="{{ onCp0 }}" style="width:120px;height:38px;padding:0 10px;border:1px solid #F3E3D6;border-radius:8px;font-size:14px;font-weight:600;text-align:right;outline:none;font-variant-numeric:tabular-nums" style-focus="border-color:#D63370"></input></label>
+              <label style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13.5px">동종 합포<input type="number" min="0" step="10" value="{{ cp1 }}" onChange="{{ onCp1 }}" style="width:120px;height:38px;padding:0 10px;border:1px solid #F3E3D6;border-radius:8px;font-size:14px;font-weight:600;text-align:right;outline:none;font-variant-numeric:tabular-nums" style-focus="border-color:#D63370"></input></label>
+              <label style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13.5px">이종 합포<input type="number" min="0" step="10" value="{{ cp2 }}" onChange="{{ onCp2 }}" style="width:120px;height:38px;padding:0 10px;border:1px solid #F3E3D6;border-radius:8px;font-size:14px;font-weight:600;text-align:right;outline:none;font-variant-numeric:tabular-nums" style-focus="border-color:#D63370"></input></label>
+            </div>
+            <div style="margin-top:8px;font-size:11.5px;color:#8B93A1">견적서(2026-10-22) 기준 · 바꾸면 결과와 엑셀에 바로 반영</div>
+          </section>
+        </div>
+
+        <sc-if value="{{ hasCloseMonths }}">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:12px;color:#6B7280;font-weight:600;margin-right:4px">마감 월</span>
+            <sc-for list="{{ closeMonthTabs }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.onClick }}" style="{{ m.style }}">{{ m.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ closeEmpty }}">
+          <div style="background:#fff;border:2px dashed #F7C6D6;border-radius:14px;padding:52px 20px;text-align:center;font-size:13px;color:#8B93A1">{{ closeEmptyLabel }}</div>
+        </sc-if>
+
+        <sc-if value="{{ hasCloseData }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+            <div style="grid-column:span 2;background:#D63370;color:#fff;border-radius:14px;padding:16px 20px">
+              <div style="font-size:12px;font-weight:600">작업료 합계 (vat 별도)</div>
+              <div style="margin-top:4px;font-size:32px;font-weight:800;letter-spacing:-0.8px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ closeAmt }}<span style="font-size:16px;font-weight:700;margin-left:2px">원</span></div>
+              <div style="margin-top:2px;font-size:12.5px;font-weight:600">vat 포함 {{ closeVat }}원</div>
+            </div>
+            <sc-for list="{{ closeTiles }}" as="t" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;padding:16px 18px">
+                <div style="font-size:26px;font-weight:800;letter-spacing:-0.5px;font-variant-numeric:tabular-nums;color:#1F2937">{{ t.n }}</div>
+                <div style="margin-top:6px;font-size:12px;color:#6B7280;font-weight:600">{{ t.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ hasCloseNotFound }}">
+            <div style="background:#FFF0F5;border:1px solid #F7C6D6;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#A8215A;font-weight:600">원송장을 못 찾은 추가송장 {{ closeNotFound }}건은 동종 합포로 집계했습니다</div>
+          </sc-if>
+
+          <section>
+            <h2 style="margin:0 0 10px;font-size:15px;font-weight:700;letter-spacing:-0.2px">구분별 집계</h2>
+            <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums">
+                <thead><tr>
+                  <th style="padding:10px 14px;background:#FFF7FA;color:#6B7280;font-size:12px;font-weight:600;text-align:left;border-bottom:1px solid #F3E3D6;white-space:nowrap">구분</th>
+                  <sc-for list="{{ closeHead }}" as="h" hint-placeholder-count="6"><th style="padding:10px 14px;background:#FFF7FA;color:#6B7280;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #F3E3D6;white-space:nowrap">{{ h }}</th></sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ closeSumRows }}" as="r" hint-placeholder-count="2">
+                    <tr>
+                      <td style="padding:10px 14px;border-bottom:1px solid #F7EDE4;font-weight:600;white-space:nowrap">{{ r.label }}</td>
+                      <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6"><td style="padding:10px 14px;border-bottom:1px solid #F7EDE4;text-align:right;white-space:nowrap">{{ c }}</td></sc-for>
+                    </tr>
+                  </sc-for>
+                  <tr>
+                    <td style="padding:11px 14px;border-top:2px solid #1F2937;font-weight:800;white-space:nowrap">총계</td>
+                    <sc-for list="{{ closeSumTot }}" as="c" hint-placeholder-count="6"><td style="padding:11px 14px;border-top:2px solid #1F2937;text-align:right;font-weight:800;white-space:nowrap">{{ c }}</td></sc-for>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+              <h2 style="margin:0;font-size:15px;font-weight:700;letter-spacing:-0.2px">일자별 <span style="font-weight:500;color:#6B7280;font-size:12.5px">포장지시일</span></h2>
+              <div style="display:flex;gap:2px;padding:3px;background:#FFF0F5;border-radius:9px">
+                <sc-for list="{{ closeGTabs }}" as="g" hint-placeholder-count="2">
+                  <button onClick="{{ g.onClick }}" style="{{ g.style }}">{{ g.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums">
+                <thead><tr>
+                  <th style="padding:10px 14px;background:#FFF7FA;color:#6B7280;font-size:12px;font-weight:600;text-align:left;border-bottom:1px solid #F3E3D6;white-space:nowrap">일자</th>
+                  <sc-for list="{{ closeHead }}" as="h" hint-placeholder-count="6"><th style="padding:10px 14px;background:#FFF7FA;color:#6B7280;font-size:12px;font-weight:600;text-align:right;border-bottom:1px solid #F3E3D6;white-space:nowrap">{{ h }}</th></sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ closeDayRows }}" as="r" hint-placeholder-count="5">
+                    <tr>
+                      <td style="padding:9px 14px;border-bottom:1px solid #F7EDE4;white-space:nowrap">{{ r.label }}</td>
+                      <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6"><td style="padding:9px 14px;border-bottom:1px solid #F7EDE4;text-align:right;white-space:nowrap">{{ c }}</td></sc-for>
+                    </tr>
+                  </sc-for>
+                  <sc-if value="{{ hasCloseDays }}">
+                    <tr>
+                      <td style="padding:11px 14px;border-top:2px solid #1F2937;font-weight:800;white-space:nowrap">합계</td>
+                      <sc-for list="{{ closeDayTot }}" as="c" hint-placeholder-count="6"><td style="padding:11px 14px;border-top:2px solid #1F2937;text-align:right;font-weight:800;white-space:nowrap">{{ c }}</td></sc-for>
+                    </tr>
+                  </sc-if>
+                </tbody>
+              </table>
+              <sc-if value="{{ noCloseDays }}"><div style="padding:30px 20px;text-align:center;font-size:12.5px;color:#8B93A1">{{ closeNoDayLabel }}</div></sc-if>
+            </div>
+          </section>
+        </sc-if>
+
+        <div style="font-size:11.5px;color:#8B93A1;line-height:1.7">
+          송장번호 1개 = 1건. 상품 1종 · 수량 1개는 단포, 같은 상품 2개 이상은 동종 합포, 상품 2종 이상은 이종 합포<br>
+          배송사명에 "도착"이 들어가면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
+          추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ keepStock }}" hint-placeholder-val="{{ false }}">
       <div style="display:{{ dispStock }};flex:1;flex-direction:column;min-height:0">
         <iframe srcDoc="{{ stockHtml }}" title="월말 재고실사" style="flex:1;width:100%;min-height:100vh;border:0;background:#FFF8F0"></iframe>
@@ -938,6 +1077,8 @@ const NAV_ON = NAV + "background:#FFE3EC;color:#A8215A;font-weight:700";
 const NAV_OFF = NAV + "color:#374151";
 const pad = n => String(n).padStart(2, "0");
 const EXP_KEY = "bg_exp_v1";
+const CLOSE_KEY = "bg_close_v1";
+const CLOSE_PRICE = { "단포": 850, "동종 합포": 1050, "이종 합포": 1250 };
 const EXP_RULES = [
   { key: "ferment", label: "발효유", days: 10, re: /^\s*(\([^)]*\)\s*|\[[^\]]*\]\s*)*따옴|요플레|바이오플레|only\s*\d|짜먹는|요구르트|요거트|그릭|드링킹/i },
   { key: "milk", label: "냉장 우유", days: 8, re: /맛우유|바나나라이트|바나나무가당|단지/ }
@@ -1054,14 +1195,18 @@ class Component extends DCLogic {
     openTabs: [this.props.defaultTab === "품목현황" ? "items" : this.props.defaultTab === "클레임 관리" ? "claims" : "guide"], retExportOpen: false, guideZoom: "",
     items: load(K.items, []), claims: load(K.claims, []), wb: load(K.wb, {}), log: load(K.log, []), returns: load(K.returns, []), retQ: "", retMonth: today().slice(0, 7), retLink: "",
     itemQ: "", itemTemp: "", itemUse: "", claimQ: "", claimKind: "", claimStatus: "", month: today().slice(0, 7), wbQ: "", wbPw: "",
-    edit: null, editErr: "", paste: null, msg: "", syncSt: { state: "off" }, syncOpen: false
+    edit: null, editErr: "", paste: null, msg: "", syncSt: { state: "off" }, syncOpen: false,
+    closeMonths: (() => { try { return JSON.parse(localStorage.getItem(CLOSE_KEY) || "{}"); } catch (e) { return {}; } })(),
+    closePrice: (() => { try { return Object.assign({}, CLOSE_PRICE, JSON.parse(localStorage.getItem(CLOSE_KEY + "_price") || "{}")); } catch (e) { return Object.assign({}, CLOSE_PRICE); } })(),
+    closeYm: "", closeG: "일반", closeBusy: false
   };
 
   componentDidMount() {
+    import("./bg-close.js?v=1").then(m => { this._cm = m; this.forceUpdate(); });
     import("./bg-sync.js?v=4").then(() => {
       const S = window.BgSync;
       S.onStatus(st => this.setState({ syncSt: st }));
-      S.onData(initial => { if (S.ready()) this.pullExp(); if (initial === false && !S.ready()) return; if (initial) this.applyRemote(true); else { clearTimeout(this._rt); this._rt = setTimeout(() => this.applyRemote(false), 120); } });
+      S.onData(initial => { if (S.ready()) { this.pullExp(); this.pullClose(); } if (initial === false && !S.ready()) return; if (initial) this.applyRemote(true); else { clearTimeout(this._rt); this._rt = setTimeout(() => this.applyRemote(false), 120); } });
       this.seed();
       if (!S.url()) this.prune(true);
       S.onStatus(st => { if (st.state === "error" && /bg/.test(st.msg) && !this._ruleShown) { this._ruleShown = true; this.setState({ syncOpen: true, syncUrlDraft: S.url(), syncNameDraft: S.name(), syncErr: st.msg }); } });
@@ -1184,6 +1329,122 @@ class Component extends DCLogic {
       this.setState({ expData: data });
       this.toast("임박재고 대상 품목 " + rows.length + "줄을 불러왔습니다");
     } catch (er) { this.toast(er.message || "파일을 읽지 못했습니다"); }
+  }
+  pullClose() {
+    const S = window.BgSync; if (!S) return;
+    const months = {}; S.list("close").forEach(r => { months[r.id] = r; });
+    if (!this._closeJoined) {
+      this._closeJoined = true;
+      Object.keys(this.state.closeMonths || {}).forEach(id => { if (!months[id]) { months[id] = this.state.closeMonths[id]; S.put("close", months[id]); } });
+      const pr0 = S.list("closeprice").find(x => x.id === "current");
+      if (!pr0 && this.state.closePrice._at) S.put("closeprice", Object.assign({ id: "current" }, this.state.closePrice));
+    }
+    const next = { closeMonths: months };
+    const pr = S.list("closeprice").find(x => x.id === "current");
+    if (pr && (!this._cpEdit || Date.now() - this._cpEdit > 2500)) next.closePrice = Object.assign({}, CLOSE_PRICE, pr);
+    this.setState(next);
+    try { localStorage.setItem(CLOSE_KEY, JSON.stringify(months)); if (next.closePrice) localStorage.setItem(CLOSE_KEY + "_price", JSON.stringify(next.closePrice)); } catch (e) {}
+  }
+  closeLog(action, target) {
+    const S = this.live(), by = (window.BgSync && window.BgSync.name()) || "";
+    const lg = { id: uid(), at: Date.now(), by, action, target };
+    const log = [lg, ...this.state.log].slice(0, 500);
+    this.setState({ log }); this.persist("log", log);
+    if (S) S.put("log", lg);
+  }
+  setClosePrice(k, v) {
+    const S = this.live(), cp = Object.assign({}, this.state.closePrice, { [k]: v === "" ? "" : Number(v), _at: Date.now(), _by: (window.BgSync && window.BgSync.name()) || "" });
+    this._cpEdit = Date.now();
+    this.setState({ closePrice: cp });
+    try { localStorage.setItem(CLOSE_KEY + "_price", JSON.stringify(cp)); } catch (e) {}
+    if (S) { clearTimeout(this._cpT); this._cpT = setTimeout(() => S.put("closeprice", Object.assign({ id: "current" }, this.state.closePrice)), 600); }
+  }
+  closeNum() { const p = this.state.closePrice || {}; return { "단포": +p["단포"] || 0, "동종 합포": +p["동종 합포"] || 0, "이종 합포": +p["이종 합포"] || 0 }; }
+  closeRes(rec) {
+    const key = rec.id + "|" + rec.at;
+    if (this._crKey !== key) { this._cr = this._cm.unpack(rec); this._crKey = key; }
+    return this._cr;
+  }
+  async onCloseFile(e) {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (!this._cm) return this.toast("집계 모듈을 불러오는 중입니다. 잠시 후 다시 시도하세요");
+    this.setState({ closeBusy: true });
+    try {
+      const wbk = await this.readBook(f, "");
+      const res = this._cm.compute(this.sheetRows(wbk, wbk.SheetNames[0]));
+      const ym = this._cm.monthOf(res) || "일자없음";
+      const old = this.state.closeMonths[ym];
+      if (old && !window.confirm(ym + " 집계가 이미 있습니다 (" + old.file + ").\n새 파일로 교체할까요?")) return;
+      const d = new Date(), by = (window.BgSync && window.BgSync.name()) || "";
+      const rec = Object.assign({ id: ym, file: f.name, at: today() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()), _by: by }, this._cm.pack(res));
+      const months = Object.assign({}, this.state.closeMonths, { [ym]: rec });
+      this.setState({ closeMonths: months, closeYm: ym });
+      try { localStorage.setItem(CLOSE_KEY, JSON.stringify(months)); } catch (er) {}
+      const S = this.live(); if (S) S.put("close", rec);
+      this.closeLog("작업료 집계 업로드", ym + " · " + f.name + " · 송장 " + fmt(res.invoices.length) + "건");
+      this.toast(ym + " 송장 " + fmt(res.invoices.length) + "건을 집계했습니다");
+    } catch (er) { this.toast(er.message || "파일을 읽지 못했습니다"); }
+    finally { this.setState({ closeBusy: false }); }
+  }
+  clearClose(ym) {
+    if (!ym || !window.confirm(ym + " 작업료 집계를 삭제할까요?\n같이 쓰는 모든 사람에게서 지워집니다.")) return;
+    const months = Object.assign({}, this.state.closeMonths); delete months[ym];
+    this.setState({ closeMonths: months, closeYm: "" });
+    try { localStorage.setItem(CLOSE_KEY, JSON.stringify(months)); } catch (e) {}
+    const S = this.live(); if (S) S.del("close", ym);
+    this.closeLog("작업료 집계 삭제", ym);
+  }
+  async downloadClose(rec) {
+    if (!rec || !this._cm) return;
+    if (typeof ExcelJS === "undefined") return this.toast("엑셀 모듈을 불러오지 못했습니다");
+    try {
+      const buf = await this._cm.buildWorkbook(ExcelJS, this.closeRes(rec), this.closeNum());
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = "빙그레_일반작업료_집계_" + (/^\d{4}-\d{2}$/.test(rec.id) ? (+rec.id.slice(5)) + "월" : rec.id) + ".xlsx";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (er) { this.toast("엑셀을 만들지 못했습니다: " + (er.message || er)); }
+  }
+  closeVals() {
+    const s = this.state, months = s.closeMonths || {}, keys = Object.keys(months).sort().reverse();
+    const ym = s.closeYm && months[s.closeYm] ? s.closeYm : keys[0];
+    const rec = ym ? months[ym] : null, M = this._cm, res = rec && M ? this.closeRes(rec) : null;
+    const P = this.closeNum(), KS = ["단포", "동종 합포", "이종 합포"];
+    const sum = res ? M.summarize(res, P) : null;
+    const a = sum && sum["일반"], b = sum && sum["도착보장"];
+    const cells = x => [...KS.map(k => fmt(x[k])), fmt(x.total), fmt(x.add), fmt(x.amount)];
+    const tot = sum ? { total: a.total + b.total, add: a.add + b.add, amount: a.amount + b.amount } : null;
+    if (tot) KS.forEach(k => tot[k] = a[k] + b[k]);
+    const g = sum ? sum[s.closeG] : null;
+    const SEG = "height:30px;padding:0 14px;border:0;border-radius:7px;font-size:12.5px;cursor:pointer;";
+    const PILL = "height:32px;padding:0 14px;border-radius:999px;font-size:12.5px;cursor:pointer;";
+    const pc = s.closePrice || {};
+    return {
+      isClose: s.tab === "close", navClose: s.tab === "close" ? NAV_ON : NAV_OFF, goClose: () => this.goTab("close"),
+      closeAsof: rec ? rec.at + (rec._by ? " · " + rec._by : "") : "-",
+      closeStatus: s.closeBusy ? "읽는 중…" : rec ? ym + " · " + rec.file + " · 원본 " + fmt(rec.rowCount) + "줄" : "올린 파일이 없습니다.",
+      closeFileLabel: s.closeBusy ? "읽는 중…" : "파일 선택",
+      onCloseFile: ev => this.onCloseFile(ev), downloadClose: () => this.downloadClose(rec), clearClose: () => this.clearClose(ym),
+      cp0: pc["단포"], cp1: pc["동종 합포"], cp2: pc["이종 합포"],
+      onCp0: ev => this.setClosePrice("단포", ev.target.value), onCp1: ev => this.setClosePrice("동종 합포", ev.target.value), onCp2: ev => this.setClosePrice("이종 합포", ev.target.value),
+      hasCloseMonths: keys.length > 1,
+      closeMonthTabs: keys.map(k => ({ label: k, onClick: () => this.setState({ closeYm: k }),
+        style: PILL + (k === ym ? "border:1px solid #D63370;background:#D63370;color:#fff;font-weight:700" : "border:1px solid #F3E3D6;background:#fff;color:#4B5563") })),
+      hasCloseData: !!sum, closeEmpty: !sum,
+      closeEmptyLabel: rec && !M ? "집계 불러오는 중…" : "🍪 아직 올린 출고내역서가 없습니다",
+      closeAmt: tot ? fmt(tot.amount) : "0", closeVat: sum ? fmt(a.vat + b.vat) : "0",
+      closeTiles: tot ? [{ n: fmt(tot.total), label: "송장 건수" }, { n: fmt(a.total), label: "일반" }, { n: fmt(b.total), label: "도착보장" }, { n: fmt(tot.add), label: "추가송장 (포함)" }] : [],
+      hasCloseNotFound: !!(res && res.notFound), closeNotFound: res ? fmt(res.notFound) : "0",
+      closeHead: [...KS, "합계 건수", "추가송장", "금액 (vat 별도)"],
+      closeSumRows: sum ? [{ label: "일반", cells: cells(a) }, { label: "도착보장", cells: cells(b) }] : [],
+      closeSumTot: tot ? cells(tot) : [],
+      closeGTabs: ["일반", "도착보장"].map(x => ({ label: x, onClick: () => this.setState({ closeG: x }), style: SEG + (s.closeG === x ? "background:#fff;color:#A8215A;font-weight:700;box-shadow:0 1px 3px rgba(214,51,112,0.15)" : "background:transparent;color:#6B7280") })),
+      closeDayRows: g ? g.days.map(d => { const t = { total: KS.reduce((x, k) => x + d[k], 0), add: d.add, amount: KS.reduce((x, k) => x + d[k] * P[k], 0) }; KS.forEach(k => t[k] = d[k]); return { label: d.day ? d.day.toISOString().slice(0, 10) : "(일자 없음)", cells: cells(t) }; }) : [],
+      hasCloseDays: !!(g && g.days.length), noCloseDays: !!(g && !g.days.length), closeNoDayLabel: s.closeG + " 송장이 없습니다",
+      closeDayTot: g ? cells(g) : []
+    };
   }
   clearExp() {
     if (!window.confirm("올린 임박재고 데이터를 삭제할까요?")) return;
@@ -1581,7 +1842,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, limit = Number(this.props.rowLimit) || 300;
     const go = t => () => this.goTab(t);
-    const TAB_LBL = { guide: "포장가이드", items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", exp: "임박재고 알람", stock: "월말 재고실사", log: "변경 이력" };
+    const TAB_LBL = { guide: "포장가이드", items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", exp: "임박재고 알람", stock: "월말 재고실사", close: "작업료 집계", log: "변경 이력" };
     const tBase = s.openTabs || [];
     const tOpen = tBase.includes(s.tab) ? tBase : [...tBase, s.tab];
     const TBS = "display:flex;align-items:center;gap:6px;max-width:200px;height:44px;padding:0 6px 0 10px;font-size:13px;white-space:nowrap;cursor:pointer;box-sizing:border-box;margin-bottom:-1px;";
@@ -1646,7 +1907,7 @@ class Component extends DCLogic {
     // 붙여넣기
     const p = s.paste, parsed = p ? this.pasteParse() : [];
 
-    return Object.assign(this.syncVals(), this.expVals(), this.guideVals(), {
+    return Object.assign(this.syncVals(), this.expVals(), this.guideVals(), this.closeVals(), {
       isItems: s.tab === "items", isClaims: s.tab === "claims", isWb: s.tab === "wb", isLog: s.tab === "log", isRet: s.tab === "ret",
       navRet: s.tab === "ret" ? NAV_ON : NAV_OFF, goRet: go("ret"),
       hasRetUnlinked: unlinkedAll > 0, retUnlinkedCount: unlinkedAll,
