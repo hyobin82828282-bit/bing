@@ -111,8 +111,13 @@ export function summarize(res, price) {
 }
 
 export async function buildWorkbook(ExcelJS, res, price) {
-  const sum = summarize(res, price);
   const wb = new ExcelJS.Workbook();
+  addSheets(wb, res, price);
+  return await wb.xlsx.writeBuffer();
+}
+
+export function addSheets(wb, res, price) {
+  const sum = summarize(res, price);
   const FN = '맑은 고딕', thin = { style: 'thin' }, B = { top: thin, left: thin, bottom: thin, right: thin };
   const GRAY = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
   const YEL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
@@ -194,5 +199,5 @@ export async function buildWorkbook(ExcelJS, res, price) {
     cell(S, 15, c, F(`SUM(${L(c)}13:${L(c)}14)`, v), { bold: true, fmt: NUM, fill: GRAY });
   }
   [12, 14, 10, 10, 10, 13, 15, 15].forEach((w, j) => S.getColumn(j + 1).width = w);
-  return await wb.xlsx.writeBuffer();
+  return wb;
 }

@@ -51,7 +51,7 @@
       </div>
       <div onClick="{{ goStock }}" style="{{ navStock }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🧊</span>월말 재고실사</div>
       <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">마감</div>
-      <div onClick="{{ goClose }}" style="{{ navClose }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍪</span>작업료 집계</div>
+      <div onClick="{{ goClose }}" style="{{ navClose }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🍪</span>출고박스▪️작업료 집계</div>
       <div style="padding:14px 8px 6px;font-size:11px;font-weight:600;color:#6B7280;letter-spacing:0.04em">기록</div>
       <div onClick="{{ goLog }}" style="{{ navLog }}"><span style="width:18px;flex:none;text-align:center;font-size:15px;line-height:1">🥛</span>변경 이력</div>
     </div>
@@ -524,16 +524,19 @@
       <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 32px 18px;background:#FFFDF8;border-bottom:3px dotted #F7C6D6">
         <div>
           <div style="font-size:11.5px;font-weight:600;color:#6B7280;letter-spacing:0.06em">마감</div>
-          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍪</span>일반 작업료 집계</h1>
-          <div style="margin-top:5px;font-size:12.5px;color:#6B7280">택배 출고내역서(통합관리 엑셀)를 넣으면 단포 · 동종 합포 · 이종 합포를 송장별로 나눠 집계합니다</div>
+          <h1 style="margin:5px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px"><span style="font-size:22px">🍪</span>출고박스▪️작업료 집계</h1>
+          <div style="margin-top:5px;font-size:12.5px;color:#6B7280">출고완료 통합 관리 파일을 넣으면 출고박스(아이스박스)와 일반 작업료(단포 · 동종 합포 · 이종 합포)를 같이 집계합니다</div>
         </div>
-        <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ closeAsof }}</b><br>올린 결과와 단가는 같이 쓰는 모두에게 실시간 공유</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <a href="bg-macro.xlsx" download="빙그레_출고박스_저온(원본매크로).xlsx" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:1px solid #D1D5DB;border-radius:9px;background:#fff;color:#374151;font-size:12.5px;font-weight:700;text-decoration:none" style-hover="border-color:#D63370;color:#D63370;text-decoration:none">원본매크로 ↓</a>
+          <div style="text-align:right;font-size:12px;color:#6B7280;line-height:1.6">데이터 기준 <b style="color:#1F2937">{{ closeAsof }}</b><br>올린 결과와 단가는 같이 쓰는 모두에게 실시간 공유</div>
+        </div>
       </header>
       <div style="display:flex;flex-direction:column;gap:20px;padding:24px 32px 40px">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
           <section style="display:flex;flex-direction:column;justify-content:center;gap:12px;background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
             <div>
-              <div style="font-size:13.5px;font-weight:700">출고내역서 파일 올리기</div>
+              <div style="font-size:13.5px;font-weight:700">출고완료 통합 관리 파일 올리기</div>
               <div style="margin-top:4px;font-size:12px;color:#6B7280">포장지시일 기준으로 월이 정해지고, 같은 월을 다시 올리면 교체됩니다.</div>
               <div style="margin-top:6px;font-size:12px;color:#D63370;font-weight:600">{{ closeStatus }}</div>
             </div>
@@ -573,6 +576,73 @@
         </sc-if>
 
         <sc-if value="{{ hasCloseData }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:24px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-0.3px">출고박스 집계</h2>
+            <sc-if value="{{ noBox }}">
+              <div style="background:#fff;border:2px dashed #F7C6D6;border-radius:14px;padding:40px 20px;text-align:center;font-size:13px;color:#8B93A1;line-height:1.7">이 달은 출고박스 결과가 없습니다<br>같은 파일을 다시 올리면 같이 집계됩니다</div>
+            </sc-if>
+            <sc-if value="{{ hasBox }}">
+              <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;padding:16px 18px">
+                <div style="font-size:26px;font-weight:800;letter-spacing:-0.5px;font-variant-numeric:tabular-nums;color:#1F2937">{{ boxTotal }}</div>
+                <div style="margin-top:6px;font-size:12px;color:#6B7280;font-weight:600">총 송장</div>
+              </div>
+              <section>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                  <h3 style="margin:0;font-size:14px;font-weight:700">일자별 아이스박스 <span style="font-weight:500;color:#6B7280;font-size:12px">저온 · 등록일시</span></h3>
+                  <div style="display:flex;gap:2px;padding:3px;background:#FFF0F5;border-radius:9px">
+                    <sc-for list="{{ boxChTabs }}" as="g" hint-placeholder-count="3">
+                      <button onClick="{{ g.onClick }}" style="{{ g.style }}">{{ g.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;overflow-x:auto">
+                  <div style="padding:10px 12px;font-size:12px;color:#6B7280;border-bottom:1px solid #F3E3D6">{{ boxChTitle }}</div>
+                  <table style="width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums">
+                    <thead><tr>
+                      <th style="padding:9px 10px;background:#FFF7FA;color:#6B7280;font-size:11.5px;font-weight:600;text-align:left;border-bottom:1px solid #F3E3D6;white-space:nowrap">날짜</th>
+                      <sc-for list="{{ boxHead }}" as="h" hint-placeholder-count="9"><th style="padding:9px 8px;background:#FFF7FA;color:#6B7280;font-size:11.5px;font-weight:600;text-align:right;border-bottom:1px solid #F3E3D6;white-space:nowrap">{{ h }}</th></sc-for>
+                    </tr></thead>
+                    <tbody>
+                      <sc-for list="{{ boxDayRows }}" as="r" hint-placeholder-count="5">
+                        <tr>
+                          <td style="padding:8px 10px;border-bottom:1px solid #F7EDE4;white-space:nowrap">{{ r.label }}</td>
+                          <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="9"><td style="padding:8px 8px;border-bottom:1px solid #F7EDE4;text-align:right;white-space:nowrap">{{ c }}</td></sc-for>
+                        </tr>
+                      </sc-for>
+                      <tr>
+                        <td style="padding:10px 10px;border-top:2px solid #1F2937;font-weight:800;white-space:nowrap">합계</td>
+                        <sc-for list="{{ boxDayTot }}" as="c" hint-placeholder-count="9"><td style="padding:10px 8px;border-top:2px solid #1F2937;text-align:right;font-weight:800;white-space:nowrap">{{ c }}</td></sc-for>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+              <section>
+                <h3 style="margin:0 0 10px;font-size:14px;font-weight:700">구성별 박스 <span style="font-weight:500;color:#6B7280;font-size:12px">많이 나간 순 30개 · 전체는 엑셀</span></h3>
+                <div style="background:#fff;border:1px solid #F3E3D6;border-radius:14px;overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums">
+                    <thead><tr>
+                      <th style="padding:9px 12px;background:#FFF7FA;color:#6B7280;font-size:11.5px;font-weight:600;text-align:left;border-bottom:1px solid #F3E3D6">구성(상품명 x수량)</th>
+                      <th style="padding:9px 10px;background:#FFF7FA;color:#6B7280;font-size:11.5px;font-weight:600;text-align:right;border-bottom:1px solid #F3E3D6;white-space:nowrap">합계</th>
+                      <th style="padding:9px 12px;background:#FFF7FA;color:#6B7280;font-size:11.5px;font-weight:600;text-align:left;border-bottom:1px solid #F3E3D6;white-space:nowrap">주로 쓴 박스</th>
+                    </tr></thead>
+                    <tbody>
+                      <sc-for list="{{ boxComboRows }}" as="r" hint-placeholder-count="5">
+                        <tr>
+                          <td style="padding:8px 12px;border-bottom:1px solid #F7EDE4;text-wrap:pretty">{{ r.combo }}</td>
+                          <td style="padding:8px 10px;border-bottom:1px solid #F7EDE4;text-align:right;white-space:nowrap">{{ r.total }}</td>
+                          <td style="padding:8px 12px;border-bottom:1px solid #F7EDE4;white-space:nowrap;font-weight:600;color:#A8215A">{{ r.main }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-0.3px">일반 작업료 집계</h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
             <div style="grid-column:span 2;background:#D63370;color:#fff;border-radius:14px;padding:16px 20px">
               <div style="font-size:12px;font-weight:600">작업료 합계 (vat 별도)</div>
@@ -647,12 +717,15 @@
               <sc-if value="{{ noCloseDays }}"><div style="padding:30px 20px;text-align:center;font-size:12.5px;color:#8B93A1">{{ closeNoDayLabel }}</div></sc-if>
             </div>
           </section>
+          </div>
+        </div>
         </sc-if>
 
         <div style="font-size:11.5px;color:#8B93A1;line-height:1.7">
           송장번호 1개 = 1건. 상품 1종 · 수량 1개는 단포, 같은 상품 2개 이상은 동종 합포, 상품 2종 이상은 이종 합포<br>
           배송사명에 "도착"이 들어가거나 판매 채널명이 직영몰 스마트스토어 · 직영몰 스마트스토어(도착보장)이면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
-          추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)
+          추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)<br>
+          출고박스 판정 순서: 스캔박스 값 → 같은 날 같은 구성의 스캔 이력 → 다른 날(이전에 올린 달 포함) 같은 구성 이력 → 부피가 가장 비슷한 스캔 송장 7건(참고용) · 상품명이 (냉동)/(냉장)이면 저온 · 일자는 등록일시 기준
         </div>
       </div>
     </sc-if>
@@ -1078,6 +1151,7 @@ const NAV_OFF = NAV + "color:#374151";
 const pad = n => String(n).padStart(2, "0");
 const EXP_KEY = "bg_exp_v1";
 const CLOSE_KEY = "bg_close_v1";
+const BOX_HIST_KEY = "bg-box-history";
 const CLOSE_PRICE = { "단포": 850, "동종 합포": 1050, "이종 합포": 1250 };
 const EXP_RULES = [
   { key: "ferment", label: "발효유", days: 10, re: /^\s*(\([^)]*\)\s*|\[[^\]]*\]\s*)*따옴|요플레|바이오플레|only\s*\d|짜먹는|요구르트|요거트|그릭|드링킹/i },
@@ -1202,7 +1276,8 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    import("./bg-close.js?v=2").then(m => { this._cm = m; this.forceUpdate(); });
+    import("./bg-close.js?v=3").then(m => { this._cm = m; this.forceUpdate(); });
+    import("./bg-box.js?v=8").then(m => { this._bm = m; this.forceUpdate(); });
     import("./bg-sync.js?v=4").then(() => {
       const S = window.BgSync;
       S.onStatus(st => this.setState({ syncSt: st }));
@@ -1365,6 +1440,12 @@ class Component extends DCLogic {
     if (this._crKey !== key) { this._cr = this._cm.unpack(rec); this._crKey = key; }
     return this._cr;
   }
+  boxRes(rec) {
+    if (!rec || !rec.box || !this._bm) return null;
+    const key = rec.id + "|" + rec.at;
+    if (this._brKey !== key) { this._br = this._bm.unpack(rec.box); this._brKey = key; }
+    return this._br;
+  }
   async onCloseFile(e) {
     const f = e.target.files && e.target.files[0]; e.target.value = "";
     if (!f) return;
@@ -1372,12 +1453,22 @@ class Component extends DCLogic {
     this.setState({ closeBusy: true });
     try {
       const wbk = await this.readBook(f, "");
-      const res = this._cm.compute(this.sheetRows(wbk, wbk.SheetNames[0]));
+      const rows = this.sheetRows(wbk, wbk.SheetNames.includes("Sheet1") ? "Sheet1" : wbk.SheetNames[0]);
+      const res = this._cm.compute(rows);
       const ym = this._cm.monthOf(res) || "일자없음";
+      let boxPack = null;
+      if (this._bm) {
+        try {
+          let past = {}; try { past = JSON.parse(localStorage.getItem(BOX_HIST_KEY) || "{}"); } catch (er) {}
+          const br = this._bm.compute(rows, past);
+          try { localStorage.setItem(BOX_HIST_KEY, JSON.stringify(this._bm.mergeHistory(past, br))); } catch (er) {}
+          boxPack = this._bm.pack(br);
+        } catch (er) { this.toast("출고박스 집계: " + (er.message || "계산하지 못했습니다")); }
+      }
       const old = this.state.closeMonths[ym];
       if (old && !window.confirm(ym + " 집계가 이미 있습니다 (" + old.file + ").\n새 파일로 교체할까요?")) return;
       const d = new Date(), by = (window.BgSync && window.BgSync.name()) || "";
-      const rec = Object.assign({ id: ym, file: f.name, at: today() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()), _by: by }, this._cm.pack(res));
+      const rec = Object.assign({ id: ym, file: f.name, at: today() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()), _by: by }, this._cm.pack(res), boxPack ? { box: boxPack } : {});
       const months = Object.assign({}, this.state.closeMonths, { [ym]: rec });
       this.setState({ closeMonths: months, closeYm: ym });
       try { localStorage.setItem(CLOSE_KEY, JSON.stringify(months)); } catch (er) {}
@@ -1399,10 +1490,13 @@ class Component extends DCLogic {
     if (!rec || !this._cm) return;
     if (typeof ExcelJS === "undefined") return this.toast("엑셀 모듈을 불러오지 못했습니다");
     try {
-      const buf = await this._cm.buildWorkbook(ExcelJS, this.closeRes(rec), this.closeNum());
+      const wb = new ExcelJS.Workbook(), br = this.boxRes(rec);
+      if (br) this._bm.addSheets(wb, br);
+      this._cm.addSheets(wb, this.closeRes(rec), this.closeNum());
+      const buf = await wb.xlsx.writeBuffer();
       const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob), a = document.createElement("a");
-      a.href = url; a.download = "빙그레_일반작업료_집계_" + (/^\d{4}-\d{2}$/.test(rec.id) ? (+rec.id.slice(5)) + "월" : rec.id) + ".xlsx";
+      a.href = url; a.download = (br ? "빙그레_출고박스_작업료_" : "빙그레_일반작업료_집계_") + (/^\d{4}-\d{2}$/.test(rec.id) ? (+rec.id.slice(5)) + "월" : rec.id) + ".xlsx";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (er) { this.toast("엑셀을 만들지 못했습니다: " + (er.message || er)); }
@@ -1421,7 +1515,18 @@ class Component extends DCLogic {
     const SEG = "height:30px;padding:0 14px;border:0;border-radius:7px;font-size:12.5px;cursor:pointer;";
     const PILL = "height:32px;padding:0 14px;border-radius:999px;font-size:12.5px;cursor:pointer;";
     const pc = s.closePrice || {};
+    const BM = this._bm, br = this.boxRes(rec), bt = br ? BM.channelTable(br, s.boxCh || "direct") : null;
+    const boxVals = {
+      hasBox: !!br, noBox: !br, boxTotal: br ? fmt(br.invoices.length) : "",
+      boxChTabs: BM ? BM.CHANNELS.map(c => ({ label: c.label, onClick: () => this.setState({ boxCh: c.key }), style: SEG + ((s.boxCh || "direct") === c.key ? "background:#fff;color:#A8215A;font-weight:700;box-shadow:0 1px 3px rgba(214,51,112,0.15)" : "background:transparent;color:#6B7280") })) : [],
+      boxChTitle: bt ? bt.ch.title : "",
+      boxHead: BM ? [...BM.BOXES.map(b => b.replace("아이스박스 ", "")), "기타", "합계"] : [],
+      boxDayRows: bt ? bt.rows.map(r => ({ label: r.day.slice(5).replace("-", "/"), cells: r.cells.map(n => n ? fmt(n) : "-") })) : [],
+      boxDayTot: bt ? bt.tot.map(fmt) : [],
+      boxComboRows: br ? BM.comboTable(br).slice(0, 30).map(r => ({ combo: r.combo, total: fmt(r.cells[8]), main: r.main })) : []
+    };
     return {
+      ...boxVals,
       isClose: s.tab === "close", navClose: s.tab === "close" ? NAV_ON : NAV_OFF, goClose: () => this.goTab("close"),
       closeAsof: rec ? rec.at + (rec._by ? " · " + rec._by : "") : "-",
       closeStatus: s.closeBusy ? "읽는 중…" : rec ? ym + " · " + rec.file + " · 원본 " + fmt(rec.rowCount) + "줄" : "올린 파일이 없습니다.",
@@ -1842,7 +1947,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, limit = Number(this.props.rowLimit) || 300;
     const go = t => () => this.goTab(t);
-    const TAB_LBL = { guide: "포장가이드", items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", exp: "임박재고 알람", stock: "월말 재고실사", close: "작업료 집계", log: "변경 이력" };
+    const TAB_LBL = { guide: "포장가이드", items: "품목현황", wb: "통합내역", claims: "클레임 관리", photo: "반품사진", ret: "반품리스트", exp: "임박재고 알람", stock: "월말 재고실사", close: "출고박스▪️작업료 집계", log: "변경 이력" };
     const tBase = s.openTabs || [];
     const tOpen = tBase.includes(s.tab) ? tBase : [...tBase, s.tab];
     const TBS = "display:flex;align-items:center;gap:6px;max-width:200px;height:44px;padding:0 6px 0 10px;font-size:13px;white-space:nowrap;cursor:pointer;box-sizing:border-box;margin-bottom:-1px;";
