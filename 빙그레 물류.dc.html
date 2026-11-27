@@ -651,7 +651,7 @@
 
         <div style="font-size:11.5px;color:#8B93A1;line-height:1.7">
           송장번호 1개 = 1건. 상품 1종 · 수량 1개는 단포, 같은 상품 2개 이상은 동종 합포, 상품 2종 이상은 이종 합포<br>
-          배송사명에 "도착"이 들어가면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
+          배송사명에 "도착"이 들어가거나 판매 채널명이 직영몰 스마트스토어 · 직영몰 스마트스토어(도착보장)이면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
           추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)
         </div>
       </div>
@@ -1202,7 +1202,7 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    import("./bg-close.js?v=1").then(m => { this._cm = m; this.forceUpdate(); });
+    import("./bg-close.js?v=2").then(m => { this._cm = m; this.forceUpdate(); });
     import("./bg-sync.js?v=4").then(() => {
       const S = window.BgSync;
       S.onStatus(st => this.setState({ syncSt: st }));

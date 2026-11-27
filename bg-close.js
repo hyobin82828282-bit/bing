@@ -13,6 +13,8 @@ function toDay(v) {
 }
 export const dayKey = d => d ? d.toISOString().slice(0, 10) : '';
 const str = v => (v == null ? '' : String(v)).trim();
+const ARR_CH = ['직영몰스마트스토어', '직영몰스마트스토어(도착보장)'];
+const gubOf = (carrier, ch) => carrier.includes('도착') || ARR_CH.includes(str(ch).replace(/\s+/g, '')) ? '도착보장' : '일반';
 
 export function compute(rows) {
   const hi = Math.max(0, rows.slice(0, 10).findIndex(r => (r || []).some(c => str(c) === '송장번호')));
@@ -22,6 +24,7 @@ export function compute(rows) {
   const missing = NEED.filter(h => !(h in col));
   if (missing.length) throw new Error('필요한 열이 없습니다: ' + missing.join(', ') + ' · 출고내역서(통합관리 엑셀)인지 확인하세요');
   const g = (r, h) => (h in col ? r[col[h]] : '');
+  const chH = ['판매 채널명', '판매채널명', '채널명'].find(h => h in col) || head.find(h => h.replace(/\s+/g, '').includes('채널명')) || '';
   const map = new Map();
   for (let i = hi + 1; i < rows.length; i++) {
     const r = rows[i];
@@ -30,7 +33,7 @@ export function compute(rows) {
     let o = map.get(inv);
     if (!o) {
       const carrier = str(g(r, '배송사 명'));
-      o = { inv, day: toDay(g(r, '포장지시일')), carrier, gub: carrier.includes('도착') ? '도착보장' : '일반',
+      o = { inv, day: toDay(g(r, '포장지시일')), carrier, gub: gubOf(carrier, chH ? g(r, chH) : ''),
         pack: str(g(r, '합포장 번호')), order: str(g(r, '쇼핑몰 주문번호')), skus: new Set(), qty: 0 };
       map.set(inv, o);
     }
@@ -72,7 +75,7 @@ export function pack(res) {
   const cs = [], ci = new Map();
   const lines = res.invoices.map(o => {
     let c = ci.get(o.carrier); if (c == null) { c = cs.length; cs.push(o.carrier); ci.set(o.carrier, c); }
-    return [o.inv, dayKey(o.day), c, o.nsku, o.qty, KINDS.indexOf(o.kind), o.type === '추가송장' ? 1 : 0, o.orig || ''].join('\t');
+    return [o.inv, dayKey(o.day), c, o.nsku, o.qty, KINDS.indexOf(o.kind), o.type === '추가송장' ? 1 : 0, o.orig || '', o.gub === '도착보장' ? 1 : 0].join('\t');
   });
   return { rowCount: res.rowCount, addCount: res.addCount, notFound: res.notFound, carriers: cs, packed: lines.join('\n') };
 }
@@ -80,7 +83,7 @@ export function unpack(rec) {
   const cs = rec.carriers || [];
   const invoices = String(rec.packed || '').split('\n').filter(Boolean).map(l => {
     const a = l.split('\t'), carrier = cs[+a[2]] || '';
-    return { inv: a[0], day: a[1] ? new Date(a[1] + 'T00:00:00Z') : null, carrier, gub: carrier.includes('도착') ? '도착보장' : '일반',
+    return { inv: a[0], day: a[1] ? new Date(a[1] + 'T00:00:00Z') : null, carrier, gub: a[8] != null ? (a[8] === '1' ? '도착보장' : '일반') : gubOf(carrier, ''),
       nsku: +a[3], qty: +a[4], kind: KINDS[+a[5]] || '단포', type: a[6] === '1' ? '추가송장' : '원송장', orig: a[7] || null };
   });
   return { invoices, rowCount: rec.rowCount || 0, addCount: rec.addCount || 0, notFound: rec.notFound || 0 };
