@@ -1269,9 +1269,10 @@ class Component extends DCLogic {
         });
         const nr = 4 + live.length + 2;
         const t3 = new Date(t.getTime() + 2 * 864e5);
-        ws.getCell("A" + nr).value = "(1) 1일 후 불용 : " + t.getDate() + "일까지 출고 가능 " + t2.getDate() + "일 00:00시에 불용처리";
-        ws.getCell("A" + (nr + 1)).value = "(2) 2일 후 불용 : " + t2.getDate() + "일까지 출고 가능 " + t3.getDate() + "일 00:00시에 불용처리";
-        [nr, nr + 1].forEach(n => { const c = ws.getCell("A" + n); c.font = Object.assign({ bold: true }, F); c.alignment = { horizontal: "left" }; });
+        const notes = [];
+        if (live.some(r => r.gap === 1)) notes.push("(1) 1일 후 불용 : " + t.getDate() + "일까지 출고 가능 " + t2.getDate() + "일 00:00시에 불용처리");
+        if (live.some(r => r.gap === 2)) notes.push("(2) 2일 후 불용 : " + t2.getDate() + "일까지 출고 가능 " + t3.getDate() + "일 00:00시에 불용처리");
+        notes.forEach((txt, i) => { const c = ws.getCell("A" + (nr + i)); c.value = txt; c.font = Object.assign({ bold: true }, F); c.alignment = { horizontal: "left" }; });
         wbk.xlsx.writeBuffer().then(buf => {
           const a = document.createElement("a");
           a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
