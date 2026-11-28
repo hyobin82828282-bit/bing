@@ -725,7 +725,7 @@
           송장번호 1개 = 1건. 상품 1종 · 수량 1개는 단포, 같은 상품 2개 이상은 동종 합포, 상품 2종 이상은 이종 합포<br>
           배송사명에 "도착"이 들어가거나 판매 채널명이 직영몰 스마트스토어 · 직영몰 스마트스토어(도착보장)이면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
           추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)<br>
-          출고박스 판정 순서: 스캔박스 값 → 같은 날 같은 구성의 스캔 이력 → 다른 날(이전에 올린 달 포함) 같은 구성 이력 → 부피가 가장 비슷한 스캔 송장 7건(참고용) · 상품명이 (냉동)/(냉장)이면 저온 · 일자는 등록일시 기준
+          출고박스 판정 순서: 상온 + 상품명 "박스출고"는 송장부착 → 스캔박스 값 → 같은 날 같은 구성(상품코드·수량)의 스캔 이력 → 다른 날 같은 구성 이력 → 부피가 비슷한 스캔 송장 7건(참고용) · 온도는 출고할당명, 없으면 상품명의 냉동/냉장/상온 · 일자는 등록일시 기준 (00시 등록은 전날)
         </div>
       </div>
     </sc-if>
@@ -1276,8 +1276,8 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    import("./bg-close.js?v=3").then(m => { this._cm = m; this.forceUpdate(); });
-    import("./bg-box.js?v=8").then(m => { this._bm = m; this.forceUpdate(); });
+    import("./bg-close.js?v=4").then(m => { this._cm = m; this.forceUpdate(); });
+    import("./bg-box.js?v=9").then(m => { this._bm = m; this.forceUpdate(); });
     import("./bg-sync.js?v=4").then(() => {
       const S = window.BgSync;
       S.onStatus(st => this.setState({ syncSt: st }));

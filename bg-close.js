@@ -131,7 +131,7 @@ export function addSheets(wb, res, price) {
   };
   const L = n => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
   const F = (formula, result) => ({ formula, result });
-  const S = wb.addWorksheet('요약', { views: [{ showGridLines: false }] });
+  const S = wb.addWorksheet('요약', { views: [{ showGridLines: false }], properties: { tabColor: { argb: 'FFF79646' } } });
   const D1 = wb.addWorksheet('일반 (CJ대한통운)', { views: [{ state: 'frozen', xSplit: 1, ySplit: 2, showGridLines: false }] });
   const D2 = wb.addWorksheet('도착보장', { views: [{ state: 'frozen', xSplit: 1, ySplit: 2, showGridLines: false }] });
   const D = wb.addWorksheet('송장별 분류', { views: [{ state: 'frozen', ySplit: 1, showGridLines: false }] });
