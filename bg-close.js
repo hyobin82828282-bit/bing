@@ -1,15 +1,24 @@
 // 빙그레 일반 작업료 집계 — 계산 · 압축 · 엑셀 생성
 export const KINDS = ['단포', '동종 합포', '이종 합포'];
-const NEED = ['송장번호', '상품코드', '주문수량', '배송사 명', '포장지시일'];
+const NEED = ['송장번호', '상품코드', '주문수량', '배송사 명', '등록일시'];
 
+// 등록일시 → 날짜 (00시 등록은 전날) — 출고박스 매크로와 같은 기준
 function toDay(v) {
-  if (v instanceof Date && !isNaN(v)) return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()));
-  if (typeof v === 'number' && isFinite(v)) {
-    const d = new Date(Math.round((v - 25569) * 86400000));
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  let y, mo, d, h;
+  if (v instanceof Date && !isNaN(v)) { y = v.getFullYear(); mo = v.getMonth(); d = v.getDate(); h = v.getHours(); }
+  else if (typeof v === 'number' && isFinite(v)) {
+    const s = Math.floor(v), t = new Date((s - 25569) * 86400000);
+    y = t.getUTCFullYear(); mo = t.getUTCMonth(); d = t.getUTCDate(); h = Math.floor((v - s) * 24 + 1e-7);
+  } else {
+    const t = String(v || '').trim(), m = t.match(/(\d{4})\s*[-./]\s*(\d{1,2})\s*[-./]\s*(\d{1,2})/);
+    if (!m) return null;
+    y = +m[1]; mo = +m[2] - 1; d = +m[3];
+    const tm = t.slice(m.index + m[0].length).match(/(\d{1,2}):(\d{2})/);
+    h = tm ? +tm[1] : 0;
+    if (tm && /오후|PM/i.test(t) && h < 12) h += 12;
+    if (tm && /오전|AM/i.test(t) && h === 12) h = 0;
   }
-  const m = String(v || '').match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
-  return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+  return new Date(Date.UTC(y, mo, d - (h === 0 ? 1 : 0)));
 }
 export const dayKey = d => d ? d.toISOString().slice(0, 10) : '';
 const str = v => (v == null ? '' : String(v)).trim();
@@ -33,7 +42,7 @@ export function compute(rows) {
     let o = map.get(inv);
     if (!o) {
       const carrier = str(g(r, '배송사 명'));
-      o = { inv, day: toDay(g(r, '포장지시일')), carrier, gub: gubOf(carrier, chH ? g(r, chH) : ''),
+      o = { inv, day: toDay(g(r, '등록일시')), carrier, gub: gubOf(carrier, chH ? g(r, chH) : ''),
         pack: str(g(r, '합포장 번호')), order: str(g(r, '쇼핑몰 주문번호')), skus: new Set(), qty: 0 };
       map.set(inv, o);
     }
@@ -135,7 +144,7 @@ export function addSheets(wb, res, price) {
   const D1 = wb.addWorksheet('일반 (CJ대한통운)', { views: [{ state: 'frozen', xSplit: 1, ySplit: 2, showGridLines: false }] });
   const D2 = wb.addWorksheet('도착보장', { views: [{ state: 'frozen', xSplit: 1, ySplit: 2, showGridLines: false }] });
   const D = wb.addWorksheet('송장별 분류', { views: [{ state: 'frozen', ySplit: 1, showGridLines: false }] });
-  const hd = ['송장번호', '포장지시일', '배송사 명', '구분', '상품 종수', '총 수량', '분류', '송장구분', '원송장번호'];
+  const hd = ['송장번호', '등록일시', '배송사 명', '구분', '상품 종수', '총 수량', '분류', '송장구분', '원송장번호'];
   hd.forEach((h, j) => cell(D, 1, j + 1, h, { bold: true, fill: GRAY }));
   res.invoices.forEach((o, i) => {
     [o.inv, o.day, o.carrier, o.gub, o.nsku, o.qty, o.kind, o.type, o.orig]
@@ -150,7 +159,7 @@ export function addSheets(wb, res, price) {
   cell(S, 3, 1, '구분', { bold: true, fill: GRAY }); cell(S, 3, 2, '단가 (vat 별도)', { bold: true, fill: GRAY });
   KINDS.forEach((k, i) => { cell(S, 4 + i, 1, k); cell(S, 4 + i, 2, price[k], { fmt: NUM, fill: YEL }); });
   ['* 단가는 견적서(2026-10-22) 기준. 노란 칸을 바꾸면 전체가 다시 계산됩니다.',
-    '* 분류(송장 1건): 상품 1종·수량 1개=단포 / 같은 상품 2개 이상=동종 합포 / 상품 2종 이상=이종 합포. 일자=포장지시일.',
+    '* 분류(송장 1건): 상품 1종·수량 1개=단포 / 같은 상품 2개 이상=동종 합포 / 상품 2종 이상=이종 합포. 일자=등록일시(00시 등록은 전날).',
     '* 추가송장(주문수량 0): 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계. 건수는 추가송장 포함.']
     .forEach((t, i) => { const c = S.getCell(8 + i, 1); c.value = t; c.font = { name: FN, size: 9 }; });
   const P = { '단포': '요약!$B$4', '동종 합포': '요약!$B$5', '이종 합포': '요약!$B$6' };

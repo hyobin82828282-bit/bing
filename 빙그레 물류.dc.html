@@ -537,7 +537,7 @@
           <section style="display:flex;flex-direction:column;justify-content:center;gap:12px;background:#fff;border:1px solid #F3E3D6;border-radius:14px;box-shadow:0 2px 6px rgba(214,51,112,0.06);padding:16px 20px">
             <div>
               <div style="font-size:13.5px;font-weight:700">출고완료 통합 관리 파일 올리기</div>
-              <div style="margin-top:4px;font-size:12px;color:#6B7280">포장지시일 기준으로 월이 정해지고, 같은 월을 다시 올리면 교체됩니다.</div>
+              <div style="margin-top:4px;font-size:12px;color:#6B7280">등록일시 기준으로 월이 정해지고, 같은 월을 다시 올리면 교체됩니다.</div>
               <div style="margin-top:6px;font-size:12px;color:#D63370;font-weight:600">{{ closeStatus }}</div>
             </div>
             <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
@@ -686,7 +686,7 @@
 
           <section>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-              <h2 style="margin:0;font-size:15px;font-weight:700;letter-spacing:-0.2px">일자별 <span style="font-weight:500;color:#6B7280;font-size:12.5px">포장지시일</span></h2>
+              <h2 style="margin:0;font-size:15px;font-weight:700;letter-spacing:-0.2px">일자별 <span style="font-weight:500;color:#6B7280;font-size:12.5px">등록일시</span></h2>
               <div style="display:flex;gap:2px;padding:3px;background:#FFF0F5;border-radius:9px">
                 <sc-for list="{{ closeGTabs }}" as="g" hint-placeholder-count="2">
                   <button onClick="{{ g.onClick }}" style="{{ g.style }}">{{ g.label }}</button>
@@ -723,7 +723,7 @@
 
         <div style="font-size:11.5px;color:#8B93A1;line-height:1.7">
           송장번호 1개 = 1건. 상품 1종 · 수량 1개는 단포, 같은 상품 2개 이상은 동종 합포, 상품 2종 이상은 이종 합포<br>
-          배송사명에 "도착"이 들어가거나 판매 채널명이 직영몰 스마트스토어 · 직영몰 스마트스토어(도착보장)이면 도착보장, 나머지는 일반 · 일자는 포장지시일 기준<br>
+          배송사명에 "도착"이 들어가거나 판매 채널명이 직영몰 스마트스토어 · 직영몰 스마트스토어(도착보장)이면 도착보장, 나머지는 일반<br>
           추가송장(주문수량 0)은 합포장 번호가 같은 원송장의 분류를 따라 1건으로 집계 (합포장 번호로 못 찾으면 쇼핑몰 주문번호로 찾음)<br>
           출고박스 판정 순서: 상온 + 상품명 "박스출고"는 송장부착 → 스캔박스 값 → 같은 날 같은 구성(상품코드·수량)의 스캔 이력 → 다른 날 같은 구성 이력 → 부피가 비슷한 스캔 송장 7건(참고용) · 온도는 출고할당명, 없으면 상품명의 냉동/냉장/상온 · 일자는 등록일시 기준 (00시 등록은 전날)
         </div>
@@ -1276,7 +1276,7 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    import("./bg-close.js?v=4").then(m => { this._cm = m; this.forceUpdate(); });
+    import("./bg-close.js?v=5").then(m => { this._cm = m; this.forceUpdate(); });
     import("./bg-box.js?v=9").then(m => { this._bm = m; this.forceUpdate(); });
     import("./bg-sync.js?v=4").then(() => {
       const S = window.BgSync;
